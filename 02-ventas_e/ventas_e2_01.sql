@@ -17,7 +17,7 @@ go
 
 --ej 2
 
-pongo directo uniquedentifier para trabajar en la nube.
+-- pongo directo uniquedentifier para trabajar en la nube.
 create table Usuario (
     Token uniqueidentifier primary key default NEWID(),
     AyN varchar(100),
@@ -86,7 +86,7 @@ select * from Usuario;
 insert into Usuario(AyN, Password, Email, Domicilio, Telefono)
 values ('Juan Barnetche', 'Juan', 'juancarnetche@gmail.com', '145 entre 22 y 23', '221 884423');
 
-insert into UsuarioXEmpresa(Quiero poner a Juan con Empresa Belpe)
+--insert into UsuarioXEmpresa(Quiero poner a Juan con Empresa Belpe)
 go
 
 -- LO MEJOR ES USAR STORE PROCEDURE
