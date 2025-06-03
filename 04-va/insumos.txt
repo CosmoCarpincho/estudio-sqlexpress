@@ -1,0 +1,49 @@
+| CodProducto | Producto / Insumo                                                        | Proveedor                       | IdProveedor |
+| ----------- | ------------------------------------------------------------------------ | ------------------------------- | ----------- |
+| 1           | Bolsas de papel Kraft multicapa de 25 kg                                 | Multicapas del Litoral S.A.     | 11          |
+| 2           | Separadores de cartón para filas de 5 bolsas                             | Cartonpack Argentina S.R.L.     | 9           |
+| 3           | Esquineros de cartón para protección estructural                         | Cartonería del Centro S.A.      | 5           |
+| 4           | Film stretch para inmovilizar carga                                      | Zonda Films y Empaques S.R.L.   | 10          |
+| 5           | Bolsas de papel aluminizado trilaminadas de 800 g                        | Envaflex Industrial S.A.        | 4           |
+| 6           | Cajas máster corrugadas para 7 bolsas                                    | Corrugados del Sur S.A.         | 16          |
+| 7           | Separadores de cartón internos                                           | Cartonería del Centro S.A.      | 5           |
+| 8           | Etiquetas con datos nutricionales                                        | SelloSeguro S.R.L.              | 13          |
+| 9           | Etiquetas RFID para trazabilidad logística                               | TecniGlass Empaques S.A.        | 15          |
+| 10          | Cajas con recubrimiento antihumedad interno                              | EcoPacking Solutions S.A.       | 12          |
+| 11          | Caja máster para leche en polvo x 400 g                                  | Corrugados del Sur S.A.         | 16          |
+| 12          | Caja máster para leche en polvo x 800 g                                  | Corrugados del Sur S.A.         | 16          |
+| 13          | Bolsa para leche entera sin impresión, envasado automático 53x92x14 cm   | Bolsaflex Industrial S.A.       | 21          |
+| 14          | Bolsa para suero en polvo con impresión, envasado automático 53x97x14 cm | TecnoEnvases SRL                | 2           |
+| 15          | Bolsa para polvo con impresión, envasado automático 53x97x14 cm          | TecnoEnvases SRL                | 2           |
+| 16          | Separador para palletizar de 1 x 1.20 mts                                | Cartonpack Argentina S.R.L.     | 9           |
+| 17          | Termoetiqueta 58 x 43 mm cono 70                                         | SelloSeguro S.R.L.              | 13          |
+| 18          | Pallets de madera estandarizados                                         | Grupo Barriopack S.A.           | 3           |
+| 19          | Film stretch para pallets                                                | Zonda Films y Empaques S.R.L.   | 10          |
+| 20          | Hipoclorito de sodio al 100%                                             | Química Pampeana S.A.           | 22          |
+| 21          | Producto de limpieza industrial (Deptacid NT)                            | Química Pampeana S.A.           | 22          |
+| 22          | Soda cáustica (hidróxido de sodio)                                       | Química Pampeana S.A.           | 22          |
+| 23          | Recupero de gruesos polvos                                               | EcoPacking Solutions S.A.       | 12          |
+| 24          | Separadores de cartón para cajas                                         | Cartonpack Argentina S.R.L.     | 9           |
+| 25          | Cinta de seguridad industrial                                            | Precintados La Esperanza S.R.L. | 19          |
+| 26          | Envase plástico para dulce de leche 400 g (fit)                          | PlastiPack SRL                  | 23          |
+| 27          | Envase plástico para dulce de leche 400 g (repostero)                    | PlastiPack SRL                  | 23          |
+| 28          | Envase plástico para dulce de leche 1 kg (repostero)                     | PlastiPack SRL                  | 23          |
+| 29          | Tapa de aluminio para envase plástico 1 kg                               | AluTapas Argentina S.A.         | 24          |
+| 30          | Etiqueta para dulce de leche 450 g                                       | SelloSeguro S.R.L.              | 13          |
+| 31          | Envase plástico para dulce de leche 1 kg (familiar)                      | PlastiPack SRL                  | 23          |
+| 32          | Caja cartón para 6 envases de 1 kg de dulce de leche                     | Cartonería del Centro S.A.      | 5           |
+| 33          | Bobina para sachet de dulce de leche 12.5 kg                             | FlexiFilm Industrial S.A.       | 25          |
+| 34          | Azúcar blanca común en bolsón de 1250 kg                                 | Azucarera del Norte S.A.        | 26          |
+| 35          | Gelificante con maltodextrina en bolsa de 25 kg                          | Ingredientes Técnicos S.A.      | 27          |
+| 36          | Materia prima desodorizada a granel                                      | Lácteos Técnicos S.A.           | 28          |
+| 37          | Alfajorero base con reducción calórica                                   | Ingredientes Técnicos S.A.      | 27          |
+| 38          | Separadores antideslizantes 1200x1000 mm                                 | Cartonpack Argentina S.R.L.     | 9           |
+| 39          | Relleno alfajorero en pouch de 12.5 kg                                   | Ingredientes Técnicos S.A.      | 27          |
+| 40          | Dióxido de titanio                                                       | Química Pampeana S.A.           | 22          |
+| 41          | Envase plástico 4 kg blanco sin impresión                                | PlastiPack SRL                  | 23          |
+| 42          | Recupero dulce relleno                                                   | EcoPacking Solutions S.A.       | 12          |
+| 43          | Caja wrap around 6 x 800 g marrón lisa                                   | Corrugados del Sur S.A.         | 16          |
+
+
+
+

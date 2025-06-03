@@ -823,29 +823,6 @@ exec usp_insertar_formula_producto
 exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
 exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioNYC, @IdFormula = @IdFormula;
 
-
--- 5. Nanocaseína fraccionada
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Nanocaseína fraccionada de alta pureza',
-    @NombreFormula = 'Fórmula NCF-Pure 92%',
-    @DescripcionFormula = 'Fracción micelar purificada, partícula <200nm, aplicación en fórmulas farmacéuticas y bebidas funcionales.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_relacionar_usuario_formula @IdUsuarioNYC, @IdFormula = @IdFormula;
-
-
--- 6. Lactosa microcristalina
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Lactosa microcristalina USP',
-    @NombreFormula = 'Fórmula Lactosa-MC-Pharma',
-    @DescripcionFormula = 'Procesada para uso farmacéutico como excipiente, tamaño controlado, bajo contenido de humedad.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
 -- Mas producto tipo dulce de leche para alfajores varios
 -- 3. Dulce de leche clásico para untar Rastafari
 exec usp_insertar_formula_producto
@@ -1017,4 +994,139 @@ values
 ('BARRIL', 'Barril o tonel'),
 ('MTS', 'Metro (longitud)'),
 ('CM', 'Centímetro (longitud)');
+go
+
+
+-- Crear insumos, digamos productos de tipo insumo
+-- bolsas papel kraft
+-- Como hacemos inserción manual, arranca en 50 porque arriba hicimos inserción usando el identity.
+set IDENTITY_INSERT Producto on;
+
+insert into Producto (CodProducto, Descripcion) values
+(51, 'Bolsas de papel Kraft multicapa de 25 kg'),
+(52, 'Separadores de cartón para filas de 5 bolsas'),
+(53, 'Esquineros de cartón para protección estructural'),
+(54, 'Film stretch para inmovilizar carga'),
+(55, 'Bolsas de papel aluminizado trilaminadas de 800 g'),
+(56, 'Cajas máster corrugadas para 7 bolsas'),
+(57, 'Separadores de cartón internos'),
+(58, 'Etiquetas con datos nutricionales'),
+(59, 'Etiquetas RFID para trazabilidad logística'),
+(60, 'Cajas con recubrimiento antihumedad interno'),
+(61, 'Caja máster para leche en polvo x 400 g'),
+(62, 'Caja máster para leche en polvo x 800 g'),
+(63, 'Bolsa para leche entera sin impresión, envasado automático 53x92x14 cm'),
+(64, 'Bolsa para suero en polvo con impresión, envasado automático 53x97x14 cm'),
+(65, 'Bolsa para polvo con impresión, envasado automático 53x97x14 cm'),
+(66, 'Separador para palletizar de 1 x 1.20 mts'),
+(67, 'Termoetiqueta 58 x 43 mm cono 70'),
+(68, 'Pallets de madera estandarizados'),
+(69, 'Film stretch para pallets'),
+(70, 'Hipoclorito de sodio al 100%'),
+(71, 'Producto de limpieza industrial (Deptacid NT)'),
+(72, 'Soda cáustica (hidróxido de sodio)'),
+(73, 'Recupero de gruesos polvos'),
+(74, 'Separadores de cartón para cajas'),
+(75, 'Cinta de seguridad industrial'),
+(76, 'Envase plástico para dulce de leche 400 g (fit)'),
+(77, 'Envase plástico para dulce de leche 400 g (repostero)'),
+(78, 'Envase plástico para dulce de leche 1 kg (repostero)'),
+(79, 'Tapa de aluminio para envase plástico 1 kg'),
+(80, 'Etiqueta para dulce de leche 450 g'),
+(81, 'Envase plástico para dulce de leche 1 kg (familiar)'),
+(82, 'Caja cartón para 6 envases de 1 kg de dulce de leche'),
+(83, 'Bobina para sachet de dulce de leche 12.5 kg'),
+(84, 'Azúcar blanca común en bolsón de 1250 kg'),
+(85, 'Gelificante con maltodextrina en bolsa de 25 kg'),
+(86, 'Materia prima desodorizada a granel'),
+(87, 'Alfajorero base con reducción calórica'),
+(88, 'Separadores antideslizantes 1200x1000 mm'),
+(89, 'Relleno alfajorero en pouch de 12.5 kg'),
+(90, 'Dióxido de titanio'),
+(91, 'Envase plástico 4 kg blanco sin impresión'),
+(92, 'Recupero dulce relleno'),
+(93, 'Caja wrap around 6 x 800 g marrón lisa');
+
+set IDENTITY_INSERT Producto off;
+
+go
+
+-- Comprar estos productos
+
+-- Insertar proveedores con id manual
+set IDENTITY_INSERT Proveedor on;
+
+-- Insertar datos con ID manualmente
+insert into Proveedor (IdProveedor, Nombre, Calle, Nro, Localidad) values
+(1, 'Empack Solutions S.A.', 'Av. Siempre Viva', '123', 'Adrogué'),
+(2, 'TecnoEnvases SRL', 'Calle Falsa', '456', 'Berazategui'),
+(3, 'Grupo Barriopack', 'Rivadavia', '789', 'Lanús Este'),
+(4, 'Envaflex Industrial', 'San Martín', '101', 'Lomas de Zamora'),
+(5, 'Cartonería del Centro', 'Belgrano', '202', 'Mar del Plata'),
+(6, 'Fábrica de Bolsas El Trébol', 'Mitre', '303', 'San Justo'),
+(7, 'Industrias Fuellex S.A.', '9 de Julio', '404', 'Quilmes'),
+(8, 'PlastiAndes SRL', 'Santa Fe', '505', 'Villa Gesell'),
+(9, 'Cartonpack Argentina', 'Corrientes', '606', 'Avellaneda'),
+(10, 'Zonda Films y Empaques', 'Perón', '707', 'Bahía Blanca'),
+(11, 'Multicapas del Litoral', 'Córdoba', '808', 'Pinamar'),
+(12, 'EcoPacking Solutions', 'Urquiza', '909', 'Rafael Calzada'),
+(13, 'SelloSeguro S.R.L.', 'Chacabuco', '111', 'Tandil'),
+(14, 'Burbuja Pack Express', '9 de Julio', '222', 'San Clemente del Tuyú'),
+(15, 'TecniGlass Empaques', 'Libertad', '333', 'Lanús Oeste'),
+(16, 'Corrugados del Sur S.A.', 'Sarmiento', '444', 'Mar Azul'),
+(17, 'VálvulaPack Industrial', 'Belgrano', '555', 'Olavarría'),
+(18, 'Envases Higiénicos Mendoza', 'Mitre', '666', 'Villa Fiorito'),
+(19, 'Precintados La Esperanza', 'Hipólito Yrigoyen', '777', 'Ezpeleta'),
+(20, 'TetraDistribuidora S.A.', 'San Juan', '888', 'San Justo'),
+(21, 'Bolsaflex Industrial S.A.', 'Avenida Textil', '1234', 'Morón'),
+(22, 'Química Pampeana S.A.', 'Camino Industrial', '567', 'Santa Rosa'),
+(23, 'PlastiPack SRL', 'Ruta 8', '7890', 'General Rodríguez'),
+(24, 'AluTapas Argentina S.A.', 'Aluminio', '321', 'San Martín'),
+(25, 'FlexiFilm Industrial S.A.', 'Filmación', '654', 'Villa Adelina'),
+(26, 'Azucarera del Norte S.A.', 'Azucarera Central', '101', 'Tucumán'),
+(27, 'Ingredientes Técnicos S.A.', 'Ingrediente', '202', 'Córdoba'),
+(28, 'Lácteos Técnicos S.A.', 'Lechería', '303', 'Villa María');
+
+set IDENTITY_INSERT Proveedor off;
+
+go
+
+-- Nombres: 'Empack Solutions S.A.', 'TecnoEnvases SRL', 'Grupo Barriopack', 'Envaflex Industrial', 'Cartonería del Centro', 'Fábrica de Bolsas El Trébol', 'Industrias Fuellex S.A.', 'PlastiAndes SRL', 'Cartonpack Argentina', 'Zonda Films y Empaques', 'Multicapas del Litoral', 'EcoPacking Solutions', 'SelloSeguro S.R.L.', 'Burbuja Pack Express', 'TecniGlass Empaques', 'Corrugados del Sur S.A.', 'VálvulaPack Industrial', 'Envases Higiénicos Mendoza', 'Precintados La Esperanza', 'TetraDistribuidora S.A.'
+
+
+-- Insertar Teléfonos (números inventados)
+insert into Telefono (Numero) values
+('11-1234-5678'), ('11-2345-6789'), ('223-456-7890'), ('223-456-7891'),
+('11-3456-7890'), ('223-567-8901'), ('11-4567-8901'), ('223-678-9012'),
+('11-5678-9012'), ('223-789-0123'), ('11-6789-0123'), ('223-890-1234'),
+('11-7890-1234'), ('223-901-2345'), ('11-8901-2345'), ('223-012-3456'),
+('11-9012-3456'), ('223-123-4567'), ('11-0123-4567'), ('223-234-5678'),
+('11-1111-1111'), ('223-222-2222'), ('11-3333-3333'), ('223-444-4444'),
+('11-5555-5555'), ('223-666-6666'), ('11-7777-7777'), ('223-888-8888'),
+('11-9999-9999'), ('223-000-0000');
+
+-- Vincular Proveedores con Teléfonos (IdProveedor y IdTelefono correlativos)
+-- 1 teléfono para proveedor 1, 2 para proveedor 2, 1 para proveedor 3, 3 para proveedor 4, etc.
+
+insert into ProveedorTelefono (IdProveedor, IdTelefono) values
+(1, 1),
+(2, 2), (2, 3),
+(3, 4),
+(4, 5), (4, 6), (4, 7),
+(5, 8),
+(6, 9), (6, 10),
+(7, 11),
+(8, 12),
+(9, 13), (9, 14),
+(10, 15),
+(11, 16), (11, 17), (11, 18),
+(12, 19),
+(13, 20),
+(14, 21), (14, 22),
+(15, 23),
+(16, 24), (16, 25),
+(17, 26),
+(18, 27),
+(19, 28), (19, 29),
+(20, 30);
 go
