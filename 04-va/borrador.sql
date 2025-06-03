@@ -77,6 +77,7 @@ print charindex(',', @cadena) -- devuelve posicion de la coma
 declare @aux nvarchar;
 set @aux = right(@cadena, 5)
 
+
 print @aux
 print @cadena
 

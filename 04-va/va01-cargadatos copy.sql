@@ -28,7 +28,6 @@ begin
         throw;
     end catch
 end
-go
 
 -- Sectores
 
@@ -38,7 +37,6 @@ values
 ('Polvos'),
 ('Dulceria'),
 ('Nano y Concentrados');
-go
 
 -- Permisos Generales: 
 insert into Permiso (Nombre, Descripcion)
@@ -391,7 +389,6 @@ begin
         raiserror(@ErrMsg, @ErrSeverity, @ErrState);
     end catch
 end
-go
 
 
 -- Recibo
@@ -481,273 +478,14 @@ exec usp_crear_usuario_con_rol @Clave = 'LB_56!25', @Nombre = 'Lorenzo', @Apelli
 exec usp_crear_usuario_con_rol @Clave = 'GA_49!25', @Nombre = 'Gabriela', @Apellido = 'Almada', @Email = 'gabriela.almada+1@ejemplo.com', @NombreRol = 'OperarioNanoYConcentrados';
 exec usp_crear_usuario_con_rol @Clave = 'RN_63!25', @Nombre = 'Renzo', @Apellido = 'Navarro', @Email = 'renzo.navarro+1@ejemplo.com', @NombreRol = 'OperarioNanoYConcentrados';
 
-go
+-- 
+select * from usuario
 
--- NUEVO 
 
--- Insertar datos a entidades que no tienen FK
 
--- UnidadMedida
--- Deposito
 
--- Estados --
--- EstadoOF
-insert into EstadoOF (Nombre)
-values ('Planificado'),('En Proceso'), ('Cerrado'), ('Calidad');
-go
 
--- EstadoOC
-insert into EstadoOC (Nombre)
-values ('Solicitada'), ('Recibida');
-go
 
--- EstadoOE
-insert into EstadoOE (Nombre)
-values ('Proceso'), ('Enviado'), ('Recibido');
-go
-
--- EstadoOR
-insert into EstadoOR (Nombre)
-values ('Proceso'), ('Solicitado'), ('Cerrado');
-go
-
-
--- Formula
-
--- UsuarioFormula
--- Como las formulas son muy importante solo tiene acceso el admin del sistema, administrador de formulas y 2 jefes en particular.
-
-
-create procedure usp_insertar_formula_producto
-    @DescripcionProducto nvarchar(255),
-    @NombreFormula nvarchar(100),
-    @DescripcionFormula nvarchar(255),
-    @CodProductoSalida int output,
-    @IdFormulaSalida int output
-as
-begin
-    set nocount on;
-    begin try
-        begin transaction;
-
-        -- Insertar Producto
-        insert into Producto (Descripcion)
-        values (@DescripcionProducto);
-
-        set @CodProductoSalida = scope_identity();
-
-        -- Insertar Formula
-        insert into Formula (Nombre, Descripcion, CodProducto)
-        values (@NombreFormula, @DescripcionFormula, @CodProductoSalida);
-
-        set @IdFormulaSalida = scope_identity();
-
-        commit transaction;
-    end try
-    begin catch
-        if @@trancount > 0 rollback transaction;
-        throw;
-    end catch
-end;
-go
-
-create procedure usp_recionar_usuario_formula
-    @IdUsuario int,
-    @IdFormula int
-as
-begin
-    set nocount on;
-
-    begin try
-        insert into UsuarioFormula (IdUsuario, IdFormula)
-        values (@IdUsuario, @IdFormula);
-    end try
-    begin catch
-        throw;
-    end catch
-end;
-go
-
-declare @CodProducto int, @IdFormula int;
-
--- 1. Dulce de leche repostero industrial
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Dulce de leche repostero industrial',
-    @NombreFormula = 'Fórmula DDL Repostero Alta Consistencia',
-    @DescripcionFormula = 'Formula con alta proporción de sólidos totales, 70%, menor humedad, ideal para horneado y repostería.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 2, @IdFormula = @IdFormula;
-
-
--- 2. Dulce de leche clásico para untar (marca blanca)
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Dulce de leche clásico para untar Marca Blanca',
-    @NombreFormula = 'Fórmula DDL Untable Estándar 2025',
-    @DescripcionFormula = 'Formula con textura suave, 62% sólidos, color caramelo claro, pensada para consumo directo.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 3, @IdFormula = @IdFormula;
-
-
--- 3. Dulce de leche para alfajores premium (exportación)
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Dulce de leche alfajor exportación',
-    @NombreFormula = 'Fórmula Export Premium 75%',
-    @DescripcionFormula = 'Alto contenido en sólidos (75%), color oscuro, sabor intenso, diseñado para exportación a Europa.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 4, @IdFormula = @IdFormula;
-
-
--- 4. Dulce de leche baja lactosa
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Dulce de leche baja en lactosa',
-    @NombreFormula = 'Fórmula DDL Lactosa Reducida',
-    @DescripcionFormula = 'Tratamiento enzimático previo, menor contenido de lactosa (<0.5%), sabor tradicional conservado.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 5, @IdFormula = @IdFormula;
-
-
-
--- MAS:
-
--- 1. Leche en polvo entera
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Leche en polvo entera 26% grasa',
-    @NombreFormula = 'Fórmula LPE 26 Alta Solubilidad',
-    @DescripcionFormula = 'Secado spray, grasa 26%, diseñada para disolución instantánea en agua caliente o fría.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 2. Leche en polvo descremada
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Leche en polvo descremada <1% grasa',
-    @NombreFormula = 'Fórmula LPD Ultra Light',
-    @DescripcionFormula = 'Baja en grasa, alto contenido proteico, ideal para industria panificadora y alimentos infantiles.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 3. Concentrado lácteo evaporado
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Concentrado lácteo evaporado 2x',
-    @NombreFormula = 'Fórmula CL-Evaporado 2025',
-    @DescripcionFormula = 'Concentración al 50% por evaporación, estabilizado para transporte a granel sin refrigeración.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 4. Concentrado proteico lácteo (CPL)
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Concentrado proteico lácteo 80%',
-    @NombreFormula = 'Fórmula CPL-80 Microfiltrado',
-    @DescripcionFormula = 'Separación por membrana, 80% proteínas, bajo contenido de lactosa, uso deportivo o nutricional.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 5. Nanocaseína fraccionada
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Nanocaseína fraccionada de alta pureza',
-    @NombreFormula = 'Fórmula NCF-Pure 92%',
-    @DescripcionFormula = 'Fracción micelar purificada, partícula <200nm, aplicación en fórmulas farmacéuticas y bebidas funcionales.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 6. Lactosa microcristalina
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Lactosa microcristalina USP',
-    @NombreFormula = 'Fórmula Lactosa-MC-Pharma',
-    @DescripcionFormula = 'Procesada para uso farmacéutico como excipiente, tamaño controlado, bajo contenido de humedad.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-declare @CodProducto int, @IdFormula int;
-
--- 1. Leche en polvo entera
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Leche en polvo entera 26% grasa',
-    @NombreFormula = 'Fórmula LPE 26 Alta Solubilidad',
-    @DescripcionFormula = 'Secado spray, grasa 26%, diseñada para disolución instantánea en agua caliente o fría.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 2. Leche en polvo descremada
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Leche en polvo descremada <1% grasa',
-    @NombreFormula = 'Fórmula LPD Ultra Light',
-    @DescripcionFormula = 'Baja en grasa, alto contenido proteico, ideal para industria panificadora y alimentos infantiles.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 3. Concentrado lácteo evaporado
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Concentrado lácteo evaporado 2x',
-    @NombreFormula = 'Fórmula CL-Evaporado 2025',
-    @DescripcionFormula = 'Concentración al 50% por evaporación, estabilizado para transporte a granel sin refrigeración.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 4. Concentrado proteico lácteo (CPL)
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Concentrado proteico lácteo 80%',
-    @NombreFormula = 'Fórmula CPL-80 Microfiltrado',
-    @DescripcionFormula = 'Separación por membrana, 80% proteínas, bajo contenido de lactosa, uso deportivo o nutricional.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
--- 5. Nanocaseína fraccionada
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Nanocaseína fraccionada de alta pureza',
-    @NombreFormula = 'Fórmula NCF-Pure 92%',
-    @DescripcionFormula = 'Fracción micelar purificada, partícula <200nm, aplicación en fórmulas farmacéuticas y bebidas funcionales.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-
-
--- 6. Lactosa microcristalina
-exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Lactosa microcristalina USP',
-    @NombreFormula = 'Fórmula Lactosa-MC-Pharma',
-    @DescripcionFormula = 'Procesada para uso farmacéutico como excipiente, tamaño controlado, bajo contenido de humedad.',
-    @CodProductoSalida = @CodProducto output,
-    @IdFormulaSalida = @IdFormula output;
-
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+-- RolesPermisos
+-- Usuarios
+-- UsuariosRoles
