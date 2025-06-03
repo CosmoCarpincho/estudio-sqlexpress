@@ -229,9 +229,12 @@ create table Deposito (
     IdDeposito int identity(1,1),
     Nombre nvarchar(100) not null,
     Descripcion nvarchar(255),
+    --CAMBIOS: agrego relacion con sector
+    IdSector int not null,
 
     constraint PK_Deposito primary key (IdDeposito),
-    constraint UQ_Deposito_Nombre unique (Nombre)
+    constraint UQ_Deposito_Nombre unique (Nombre),
+    constraint PK_Deposito_Sector foreign key (IdSector) references Sector(IdSector)
 );
 
 create table MovimientoStock (

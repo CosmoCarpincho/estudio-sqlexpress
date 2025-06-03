@@ -155,6 +155,16 @@ exec usp_insertar_permiso_orden_sector 'NanoYConcentrados_OrdenReposicion_Borrar
 
 go
 
+
+-- Permisos de ordenes de compra
+insert into Permiso (Nombre, Descripcion)
+values 
+('OrdenCompra_Leer', 'Permite leer órdenes de compra'),
+('OrdenCompra_Crear', 'Permite crear órdenes de compra'),
+('OrdenCompra_Editar', 'Permite editar órdenes de compra'),
+('OrdenCompra_Borrar', 'Permite borrar órdenes de compra');
+go
+
 -- Roles
 
 create or alter procedure usp_crear_rol_permisos
@@ -228,6 +238,13 @@ go
 -- ej: exec usp_crear_rol_permisos 'SupervisorRecibo', 'Acceso de lectura y edición a órdenes de recibo', 'Recibo_OrdenFabricacion_Leer,Recibo_OrdenFabricacion_Editar,Recibo_OrdenEntrega_Leer';
 
 
+-- ADMIN
+exec usp_crear_rol_permisos 
+    @NombreRol = 'Admin',
+    @DescripcionRol = 'Rol administrativo con acceso total a todas las funcionalidades del sistema',
+    @Permisos = 'Recibo_OrdenFabricacion_Leer,Recibo_OrdenFabricacion_Crear,Recibo_OrdenFabricacion_Editar,Recibo_OrdenFabricacion_Borrar,Recibo_OrdenEntrega_Leer,Recibo_OrdenEntrega_Crear,Recibo_OrdenEntrega_Editar,Recibo_OrdenEntrega_Borrar,Recibo_OrdenReposicion_Leer,Recibo_OrdenReposicion_Crear,Recibo_OrdenReposicion_Editar,Recibo_OrdenReposicion_Borrar,Polvos_OrdenFabricacion_Leer,Polvos_OrdenFabricacion_Crear,Polvos_OrdenFabricacion_Editar,Polvos_OrdenFabricacion_Borrar,Polvos_OrdenEntrega_Leer,Polvos_OrdenEntrega_Crear,Polvos_OrdenEntrega_Editar,Polvos_OrdenEntrega_Borrar,Polvos_OrdenReposicion_Leer,Polvos_OrdenReposicion_Crear,Polvos_OrdenReposicion_Editar,Polvos_OrdenReposicion_Borrar,Dulceria_OrdenFabricacion_Leer,Dulceria_OrdenFabricacion_Crear,Dulceria_OrdenFabricacion_Editar,Dulceria_OrdenFabricacion_Borrar,Dulceria_OrdenEntrega_Leer,Dulceria_OrdenEntrega_Crear,Dulceria_OrdenEntrega_Editar,Dulceria_OrdenEntrega_Borrar,Dulceria_OrdenReposicion_Leer,Dulceria_OrdenReposicion_Crear,Dulceria_OrdenReposicion_Editar,Dulceria_OrdenReposicion_Borrar,NanoYConcentrados_OrdenFabricacion_Leer,NanoYConcentrados_OrdenFabricacion_Crear,NanoYConcentrados_OrdenFabricacion_Editar,NanoYConcentrados_OrdenFabricacion_Borrar,NanoYConcentrados_OrdenEntrega_Leer,NanoYConcentrados_OrdenEntrega_Crear,NanoYConcentrados_OrdenEntrega_Editar,NanoYConcentrados_OrdenEntrega_Borrar,NanoYConcentrados_OrdenReposicion_Leer,NanoYConcentrados_OrdenReposicion_Crear,NanoYConcentrados_OrdenReposicion_Editar,NanoYConcentrados_OrdenReposicion_Borrar,OrdenCompra_Leer,OrdenCompra_Crear,OrdenCompra_Editar,OrdenCompra_Borrar'
+;
+go
 
 -- ==== SECTOR: Recibo ====
 
@@ -393,6 +410,19 @@ begin
 end
 go
 
+-- ADMIN
+-- Vamos a insertar que sea a la fuerza el identificador 1
+--exec usp_crear_usuario_con_rol @Clave = 'Admin123', @Nombre = 'Pepe', @Apellido = 'Argento', @Email = 'pepe.argento@gmail.com', @NombreRol = 'Admin';
+set identity_insert Usuario on;
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (1, 'Admin123', 'Pepe', 'Argento', 'pepe.argento@gmail.com');
+
+set identity_insert Usuario off;
+
+insert into UsuarioRol (IdUsuario, IdRol)
+select 1, IdRol from Rol where Nombre = 'Admin'
+
 
 -- Recibo
 exec usp_crear_usuario_con_rol @Clave = 'Jp3r3z#2025', @Nombre = 'Juan', @Apellido = 'Pérez', @Email = 'juan.perez1@ejemplo.com', @NombreRol = 'OperarioRecibo';
@@ -460,6 +490,9 @@ exec usp_crear_usuario_con_rol @Clave = 'FG_64!25', @Nombre = 'Federico', @Apell
 exec usp_crear_usuario_con_rol @Clave = 'CO_56!25', @Nombre = 'Camilo', @Apellido = 'Olmedo', @Email = 'camilo.olmedo+1@ejemplo.com', @NombreRol = 'OperarioDulceria';
 exec usp_crear_usuario_con_rol @Clave = 'OI_64!25', @Nombre = 'Oscar', @Apellido = 'Iglesias', @Email = 'oscar.iglesias+1@ejemplo.com', @NombreRol = 'OperarioDulceria';
 exec usp_crear_usuario_con_rol @Clave = 'RS_63!25', @Nombre = 'Ramiro', @Apellido = 'Suárez', @Email = 'ramiro.suarez+1@ejemplo.com', @NombreRol = 'OperarioDulceria';
+go
+
+
 
 
 -- Nano y Concentrados
@@ -487,8 +520,7 @@ go
 
 -- Insertar datos a entidades que no tienen FK
 
--- UnidadMedida
--- Deposito
+
 
 -- Estados --
 -- EstadoOF
@@ -551,7 +583,7 @@ begin
 end;
 go
 
-create procedure usp_recionar_usuario_formula
+create procedure usp_relacionar_usuario_formula
     @IdUsuario int,
     @IdFormula int
 as
@@ -568,6 +600,22 @@ begin
 end;
 go
 
+--GERALDINE
+-- Algunos jefes que pueden interactuar con algunas formulas
+declare 
+    @IdUsuarioDulceria01 int,
+    @IdUsuarioDulceria02 int,
+    @IdUsuarioNYC int,
+    @IdUsuarioPolvos int,
+    @IdUsuarioRecibo int;
+
+select @IdUsuarioDulceria01 = IdUsuario from Usuario where Email = 'esteban.quiroga@ejemplo.com';
+select @IdUsuarioDulceria02 = IdUsuario from Usuario where Email = 'franco.figueroa@ejemplo.com';
+select @IdUsuarioNYC = IdUsuario from Usuario where Email = 'ivan.benitez@ejemplo.com';
+select @IdUsuarioPolvos = IdUsuario from Usuario where Email = 'axel.roldan@ejemplo.com';
+select @IdUsuarioRecibo = IdUsuario from Usuario where Email = 'carlos.lopez@ejemplo.com';
+
+
 declare @CodProducto int, @IdFormula int;
 
 -- 1. Dulce de leche repostero industrial
@@ -578,8 +626,8 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 2, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula; -- el usuario 1 es el admin
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
 
 
 -- 2. Dulce de leche clásico para untar (marca blanca)
@@ -590,8 +638,8 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 3, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria02, @IdFormula = @IdFormula;
 
 
 -- 3. Dulce de leche para alfajores premium (exportación)
@@ -602,8 +650,8 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 4, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
 
 
 -- 4. Dulce de leche baja lactosa
@@ -614,10 +662,8 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
-exec usp_recionar_usuario_formula @IdUsuario = 5, @IdFormula = @IdFormula;
-
-
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
 
 -- MAS:
 
@@ -629,7 +675,8 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
 
 
 -- 2. Leche en polvo descremada
@@ -640,7 +687,118 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+
+-- Mas leches en polvo:
+-- 1. Leche en polvo descremada Rastafari <1% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo descremada Rastafari <1% grasa',
+    @NombreFormula = 'Fórmula LPD Rastafari Ultra Light',
+    @DescripcionFormula = 'Baja en grasa, alto contenido proteico, ideal para panificación y alimentos infantiles.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 2. Leche en polvo entera Habanito 26% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo entera Habanito 26% grasa',
+    @NombreFormula = 'Fórmula LPE Habanito Cremosa',
+    @DescripcionFormula = 'Alta en grasa para un sabor cremoso y textura óptima en repostería.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 3. Leche en polvo descremada Capitán del Cosmo <1% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo descremada Capitán del Cosmo <1% grasa',
+    @NombreFormula = 'Fórmula LPD Cosmo Ultra Light',
+    @DescripcionFormula = 'Bajo en grasa, ideal para producción de alimentos infantiles y dietéticos.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 4. Leche en polvo entera La Porteña 25% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo entera La Porteña 25% grasa',
+    @NombreFormula = 'Fórmula LPE Porteña Cremosa',
+    @DescripcionFormula = 'Perfecta para uso en panadería y elaboración de alfajores con sabor intenso.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+
+-- 5. Leche en polvo descremada El Correntino <0.5% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo descremada El Correntino <0.5% grasa',
+    @NombreFormula = 'Fórmula LPD Correntino Light',
+    @DescripcionFormula = 'Muy baja en grasa, alto contenido proteico para uso industrial y dietético.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 6. Leche en polvo entera La Ruca 27% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo entera La Ruca 27% grasa',
+    @NombreFormula = 'Fórmula LPE Ruca Extra Cremosa',
+    @DescripcionFormula = 'Alta cremosidad y sabor pleno, recomendada para rellenos y productos lácteos premium.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 7. Leche en polvo descremada La Chacarera <1% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo descremada La Chacarera <1% grasa',
+    @NombreFormula = 'Fórmula LPD Chacarera Light',
+    @DescripcionFormula = 'Baja en grasa con alta solubilidad, ideal para mezclas lácteas y dietas especiales.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 8. Leche en polvo entera El Gauchito 26% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo entera El Gauchito 26% grasa',
+    @NombreFormula = 'Fórmula LPE Gauchito Cremosa',
+    @DescripcionFormula = 'Para usos industriales que requieren alta calidad y sabor lácteo intenso.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
+
+-- 9. Leche en polvo descremada El Bombón <0.8% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo descremada El Bombón <0.8% grasa',
+    @NombreFormula = 'Fórmula LPD Bombón Light',
+    @DescripcionFormula = 'Producto con muy bajo contenido graso y buena solubilidad para bebidas lácteas.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+
+-- 10. Leche en polvo entera La Abuela 25% grasa
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Leche en polvo entera La Abuela 25% grasa',
+    @NombreFormula = 'Fórmula LPE Abuela Cremosa',
+    @DescripcionFormula = 'Sabor tradicional y textura cremosa, óptima para elaboración de productos lácteos clásicos.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioPolvos, @IdFormula = @IdFormula;
 
 
 -- 3. Concentrado lácteo evaporado
@@ -651,7 +809,7 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
 
 
 -- 4. Concentrado proteico lácteo (CPL)
@@ -662,7 +820,8 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioNYC, @IdFormula = @IdFormula;
 
 
 -- 5. Nanocaseína fraccionada
@@ -673,7 +832,7 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuarioNYC, @IdFormula = @IdFormula;
 
 
 -- 6. Lactosa microcristalina
@@ -684,70 +843,178 @@ exec usp_insertar_formula_producto
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
 
-declare @CodProducto int, @IdFormula int;
 
--- 1. Leche en polvo entera
+-- Mas producto tipo dulce de leche para alfajores varios
+-- 3. Dulce de leche clásico para untar Rastafari
 exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Leche en polvo entera 26% grasa',
-    @NombreFormula = 'Fórmula LPE 26 Alta Solubilidad',
-    @DescripcionFormula = 'Secado spray, grasa 26%, diseñada para disolución instantánea en agua caliente o fría.',
+    @DescripcionProducto = 'Dulce de leche clásico para untar Rastafari',
+    @NombreFormula = 'Fórmula DDL Untable Rastafari 2025',
+    @DescripcionFormula = 'Textura cremosa, 60% sólidos, color caramelo medio, ideal para untar en alfajores.',
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
 
-
--- 2. Leche en polvo descremada
+-- 4. Dulce de leche clásico para untar Habanito
 exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Leche en polvo descremada <1% grasa',
-    @NombreFormula = 'Fórmula LPD Ultra Light',
-    @DescripcionFormula = 'Baja en grasa, alto contenido proteico, ideal para industria panificadora y alimentos infantiles.',
+    @DescripcionProducto = 'Dulce de leche clásico para untar Habanito',
+    @NombreFormula = 'Fórmula DDL Untable Habanito 2025',
+    @DescripcionFormula = 'Suave y dulce, 63% sólidos, color caramelo dorado, pensado para paladares exigentes.',
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria02, @IdFormula = @IdFormula;
 
-
--- 3. Concentrado lácteo evaporado
+-- 5. Dulce de leche clásico para untar Capitán del Cosmo
 exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Concentrado lácteo evaporado 2x',
-    @NombreFormula = 'Fórmula CL-Evaporado 2025',
-    @DescripcionFormula = 'Concentración al 50% por evaporación, estabilizado para transporte a granel sin refrigeración.',
+    @DescripcionProducto = 'Dulce de leche clásico para untar Capitán del Cosmo',
+    @NombreFormula = 'Fórmula DDL Untable Cosmo 2025',
+    @DescripcionFormula = 'Fórmula con cuerpo, 61% sólidos, color caramelo oscuro, ideal para untar o rellenar.',
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
 
-
--- 4. Concentrado proteico lácteo (CPL)
+-- 6. Dulce de leche clásico para untar La Porteña
 exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Concentrado proteico lácteo 80%',
-    @NombreFormula = 'Fórmula CPL-80 Microfiltrado',
-    @DescripcionFormula = 'Separación por membrana, 80% proteínas, bajo contenido de lactosa, uso deportivo o nutricional.',
+    @DescripcionProducto = 'Dulce de leche clásico para untar La Porteña',
+    @NombreFormula = 'Fórmula DDL Untable Porteña 2025',
+    @DescripcionFormula = 'Textura aterciopelada, 62% sólidos, color caramelo claro, para uso gourmet.',
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
 
--- 5. Nanocaseína fraccionada
+-- 7. Dulce de leche clásico para untar El Correntino
 exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Nanocaseína fraccionada de alta pureza',
-    @NombreFormula = 'Fórmula NCF-Pure 92%',
-    @DescripcionFormula = 'Fracción micelar purificada, partícula <200nm, aplicación en fórmulas farmacéuticas y bebidas funcionales.',
+    @DescripcionProducto = 'Dulce de leche clásico para untar El Correntino',
+    @NombreFormula = 'Fórmula DDL Untable Correntino 2025',
+    @DescripcionFormula = 'Sabor tradicional, 60% sólidos, color caramelo medio, textura cremosa.',
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
 
-
--- 6. Lactosa microcristalina
+-- 8. Dulce de leche clásico para untar La Ruca
 exec usp_insertar_formula_producto
-    @DescripcionProducto = 'Lactosa microcristalina USP',
-    @NombreFormula = 'Fórmula Lactosa-MC-Pharma',
-    @DescripcionFormula = 'Procesada para uso farmacéutico como excipiente, tamaño controlado, bajo contenido de humedad.',
+    @DescripcionProducto = 'Dulce de leche clásico para untar La Ruca',
+    @NombreFormula = 'Fórmula DDL Untable Ruca 2025',
+    @DescripcionFormula = 'Ideal para rellenos, 62% sólidos, color caramelo claro, sabor equilibrado.',
     @CodProductoSalida = @CodProducto output,
     @IdFormulaSalida = @IdFormula output;
 
-exec usp_recionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+
+-- 9. Dulce de leche clásico para untar La Chacarera
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Dulce de leche clásico para untar La Chacarera',
+    @NombreFormula = 'Fórmula DDL Untable Chacarera 2025',
+    @DescripcionFormula = 'Textura firme, 63% sólidos, color caramelo medio, para consumo directo y rellenos.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+
+-- 10. Dulce de leche clásico para untar El Gauchito
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Dulce de leche clásico para untar El Gauchito',
+    @NombreFormula = 'Fórmula DDL Untable Gauchito 2025',
+    @DescripcionFormula = 'Sabor intenso, 61% sólidos, color caramelo oscuro, para rellenos premium.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
+
+-- 11. Dulce de leche clásico para untar El Bombón
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Dulce de leche clásico para untar El Bombón',
+    @NombreFormula = 'Fórmula DDL Untable Bombón 2025',
+    @DescripcionFormula = 'Cremoso y dulce, 62% sólidos, color caramelo claro, para consumo directo.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria02, @IdFormula = @IdFormula;
+
+-- 12. Dulce de leche clásico para untar La Abuela
+exec usp_insertar_formula_producto
+    @DescripcionProducto = 'Dulce de leche clásico para untar La Abuela',
+    @NombreFormula = 'Fórmula DDL Untable Abuela 2025',
+    @DescripcionFormula = 'Textura tradicional, 60% sólidos, color caramelo medio, sabor casero.',
+    @CodProductoSalida = @CodProducto output,
+    @IdFormulaSalida = @IdFormula output;
+
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria01, @IdFormula = @IdFormula;
+
+
+go
+--QUE FALTA
+-- Deposito
+
+-- Obtenemos los IdSector
+declare @ReciboId int, @PolvosId int, @DulceriaId int, @NanoId int;
+
+select @ReciboId = IdSector from Sector where Nombre = 'Recibo';
+select @PolvosId = IdSector from Sector where Nombre = 'Polvos';
+select @DulceriaId = IdSector from Sector where Nombre = 'Dulceria';
+select @NanoId = IdSector from Sector where Nombre = 'Nano y Concentrados';
+
+-- Depositos sector Recibo (recepción de materia prima láctea)
+insert into Deposito (Nombre, Descripcion, IdSector) values
+('Tanque Leche Cruda 1', 'Tanque de recepción de leche cruda 1', @ReciboId),
+('Tanque Leche Cruda 2', 'Tanque de recepción de leche cruda 2', @ReciboId),
+('Tanque Agua', 'Tanque para agua de proceso', @ReciboId),
+('Tanque Crema', 'Tanque para crema', @ReciboId);
+
+-- Depositos sector Polvos (almacenamiento de ingredientes en polvo)
+insert into Deposito (Nombre, Descripcion, IdSector) values
+('Silo Leche en Polvo', 'Silo para leche en polvo', @PolvosId),
+('Silo Suero en Polvo', 'Silo para suero en polvo', @PolvosId),
+('Silo Caseína', 'Silo para caseína en polvo', @PolvosId),
+('Depósito Aditivos', 'Depósito para aditivos en polvo', @PolvosId),
+('Depósito Envases Polvo', 'Depósito para envases de polvo', @PolvosId);
+
+-- Depositos sector Dulcería (almacenamiento y proceso de productos dulces lácteos)
+insert into Deposito (Nombre, Descripcion, IdSector) values
+('Depósito Azúcar', 'Depósito de azúcar para dulcería', @DulceriaId),
+('Tanque Jarabe', 'Tanque para jarabes', @DulceriaId),
+('Depósito Saborizantes', 'Depósito para saborizantes', @DulceriaId),
+('Depósito Empaques Dulces', 'Depósito de empaques para dulces', @DulceriaId);
+
+-- Depositos sector Nano y Concentrados (almacenamiento de productos concentrados y nano)
+insert into Deposito (Nombre, Descripcion, IdSector) values
+('Tanque Concentrado Proteico', 'Tanque para concentrado proteico', @NanoId),
+('Tanque Concentrado Grasa', 'Tanque para concentrado de grasa', @NanoId),
+('Depósito Nano Partículas', 'Depósito para nano partículas', @NanoId),
+('Depósito Ingredientes Activos', 'Depósito para ingredientes activos', @NanoId),
+('Depósito Envases Concentrados', 'Depósito para envases de concentrados', @NanoId);
+go
+
+-- UnidadMedida
+insert into UnidadMedida (Nombre, Descripcion)
+values
+('KG', 'Kilogramo'),
+('GR', 'Gramo'),
+('LT', 'Litro'),
+('ML', 'Mililitro'),
+('PO25', 'Pote de 25 gramos'),
+('PO400', 'Pote de 400 gramos'),
+('BSA25', 'Bolsa de 25 kilogramos'),
+('BSA50', 'Bolsa de 50 kilogramos'),
+('BSA100', 'Bolsa de 100 kilogramos'),
+('UN', 'Unidad'),
+('CAJA', 'Caja de productos'),
+('BIDON', 'Bidón de almacenamiento'),
+('SACO', 'Saco de material'),
+('BARRIL', 'Barril o tonel'),
+('MTS', 'Metro (longitud)'),
+('CM', 'Centímetro (longitud)');
+go
