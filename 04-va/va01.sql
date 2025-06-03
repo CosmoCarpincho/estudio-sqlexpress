@@ -1,7 +1,7 @@
--- use master;
+use master;
 
--- create database va05;
--- go
+create database va05;
+go
 
 use va05;
 go
@@ -95,6 +95,16 @@ create table UsuarioRol (
         on delete cascade
 );
 
+create table Sector (
+    IdSector int identity(1,1),
+    Nombre nvarchar(100) not null,
+    --Descripcion nvarchar(255), CAMBIOS: es redundante ya con nombre se entiende
+
+    constraint PK_Sector primary key (IdSector),
+    constraint UQ_Sector_Nombre unique (Nombre)
+);
+
+-- Permisos mas generales
 create table Permiso (
     IdPermiso int identity(1,1),
     Nombre nvarchar(100) not null,
@@ -102,6 +112,23 @@ create table Permiso (
 
     constraint PK_Permiso primary key (IdPermiso),
     constraint UQ_Permiso_Nombre unique (Nombre)
+);
+
+-- CAMBIOS: Hereda de permiso y es mas especifico ara Ordenes y Sectores
+create table PermisoOrdenSector (
+    IdPermiso int not null,
+    TipoOrden varchar(30) not null,
+    IdSector int,
+    Accion varchar(10) not null,
+
+    constraint PK_PermisoOrdenSector primary key(IdPermiso),
+    constraint FK_PermisoOrdenSector_Permiso foreign key (IdPermiso) references Permiso(IdPermiso),
+    constraint FK_PermisoOrdenSector_Sector foreign key (IdSector) references Sector(IdSector),
+    constraint CK_PermisoOrdenSector_Accion check (Accion in ('Leer', 'Crear', 'Editar', 'Borrar')),
+    constraint CK_PermisoOrdenSector_TipoOrden check (TipoOrden in ('OrdenFabricacion', 'OrdenEntrega', 'OrdenCompra', 'OrdenReposicion')),
+
+    -- Para que no existan duplicados en distintos permisos
+    constraint UQ_PermisoOrdenSector_Unicidad unique (TipoOrden, IdSector, Accion)
 );
 
 create table RolPermiso (
@@ -141,14 +168,6 @@ create table UsuarioFormula (
     constraint FK_UsuarioFormula_Formula foreign key (IdFormula) references Formula(IdFormula) on delete cascade
 );
 
-create table Sector (
-    IdSector int identity(1,1),
-    Nombre nvarchar(100) not null,
-    Descripcion nvarchar(255),
-
-    constraint PK_Sector primary key (IdSector),
-    constraint UQ_Sector_Nombre unique (Nombre)
-);
 
 create table Linea (
     IdLinea int identity(1,1),
@@ -323,7 +342,6 @@ create table MovimientoEntrega (
     constraint FK_MovimientoEntrega_OrdenEntrega foreign key (NroEntrega) references OrdenEntrega(NroEntrega)
 );
 
--- TipoPallet
 create table TipoPallet (
     IdTipoPallet int identity(1,1),
     IdUM int not null,
@@ -335,7 +353,7 @@ create table TipoPallet (
     constraint UQ_TipoPallet_Nombre unique (Nombre),
     constraint CK_TipoPallet_Capacidad check (Capacidad > 0)
 );
---Pallet 
+
 create table Pallet (
     IdPallet int identity(1,1),
     IdTipoPallet int not null,
@@ -345,7 +363,7 @@ create table Pallet (
     constraint FK_Pallet_TipoPallet foreign key (IdTipoPallet) references TipoPallet(IdTipoPallet),
     constraint CK_Pallet_CantidadDisponible check (CantidadDisponible >= 0)
 );
--- MovimientoPallet
+
 create table MovimientoPallet (
     IdMovimiento int,
     IdPallet int,
@@ -355,8 +373,6 @@ create table MovimientoPallet (
     constraint FK_MovimientoPallet_Pallet foreign key (IdPallet) references Pallet(IdPallet)
 );
 
-----
--- Telefono
 create table Telefono (
     IdTelefono int identity(1,1),
     Numero nvarchar(30) not null, -- esta simplificado sino tendria que poner codigo de area, etc
@@ -386,7 +402,6 @@ create table ProveedorTelefono (
     constraint FK_ProveedorTelefono_Telefono foreign key (IdTelefono) references Telefono(IdTelefono)
 );
 
--- EstadoOC
 create table EstadoOC (
     IdEstadoOC int identity(1,1),
     Nombre varchar(10) not null,
@@ -396,8 +411,6 @@ create table EstadoOC (
     constraint CK_EstadoOC_Nombre check (Nombre in ('Solicitada', 'Recibida'))
 );
 
--- OrdenCompra
--- Agregar Usuario 
 create table OrdenCompra (
     NroCompra int identity(1,1),
     IdUsuario int not null,
@@ -409,7 +422,6 @@ create table OrdenCompra (
     constraint FK_OrdenCompra_EstadoOC foreign key (IdEstadoOC) references EstadoOC(IdEstadoOC)
 );
 
--- MovimientoCompra
 create table MovimientoCompra (
     IdMovimiento int,
     NroCompra int,
