@@ -422,7 +422,7 @@ create table OrdenCompra (
     IdProveedor int not null,
     IdUsuario int not null,
     IdEstadoOC int not null,
-    FechaCompra datetime not null,
+    FechaCompra datetime not null default getdate(),
 
     constraint PK_OrdenCompra primary key (NroCompra),
     constraint FK_OrdenCompra_Proveedor foreign key (IdProveedor) references Proveedor(IdProveedor),

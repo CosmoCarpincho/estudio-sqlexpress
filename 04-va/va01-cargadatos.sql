@@ -625,7 +625,7 @@ begin
 end;
 go
 
---GERALDINE
+
 -- Algunos jefes que pueden interactuar con algunas formulas
 declare 
     @IdUsuarioDulceria01 int,
@@ -1177,32 +1177,223 @@ go
 
 -- Si hago una orden de compra a la vez crea unos detalles (movimiento de Entrega)
 
-usp_insertar_orden_compra_con_movimientos ''
+--usp_insertar_orden_compra_con_movimientos ''
 
-declare @IdDeposito int;
-declare @IdUM int;
+if not exists (select * from sys.types where name = 'TVP_CompraItem')
+begin
+    create type TVP_CompraItem as table (
+        CodProducto int,
+        Cantidad decimal(15,2),
+        FechaVencimiento datetime,
+        IdDeposito int,
+        IdUM int,
+        PrecioUnitario decimal(18,2)
+    );
+end
+go
+
+create or alter procedure usp_insertar_orden_compra_con_movimientos
+    @IdProveedor int,
+    @IdUsuario int,
+    @EstadoOC nvarchar(50),
+    @FechaCompra datetime = null,
+    @Items TVP_CompraItem readonly
+as
+begin
+    set nocount on;
+
+    declare @IdEstadoOC int;
+    select @IdEstadoOC = IdEstadoOC from EstadoOC where Nombre = @EstadoOC;
+
+    if @IdEstadoOC is null
+    begin
+        raiserror('Estado de orden de compra no válido.', 16, 1);
+        return;
+    end
+
+    insert into OrdenCompra (IdProveedor, IdUsuario, IdEstadoOC, FechaCompra)
+    values (@IdProveedor, @IdUsuario, @IdEstadoOC, coalesce(@FechaCompra, getdate()));
 
 
-select @IdDeposito = IdDeposito from Deposito where Nombre = 'Depósito Envases Polvo'
-select @IdUM = IdUm from UnidadMedida where Nombre = 'CA25KG'
+    declare @NroCompra int = scope_identity();
 
-insert into MovimientoStock (CodProducto, IdDeposito, IdUM, FechaVencimiento, FechaMovimiento, TipoMovimiento, CantidadModificada)
+    declare @CodProducto int, @Cantidad decimal(15,2), @FechaVencimiento datetime,
+            @IdDeposito int, @IdUM int, @PrecioUnitario decimal(18,2),
+            @TipoMovimiento varchar(7);
+
+    declare item_cursor cursor for
+        select CodProducto, Cantidad, FechaVencimiento, IdDeposito, IdUM, PrecioUnitario
+        from @Items;
+
+    open item_cursor;
+    fetch next from item_cursor into @CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, @IdUM, @PrecioUnitario;
+
+    while @@fetch_status = 0
+    begin
+        set @TipoMovimiento = case when @EstadoOC = 'Solicitada' then 'Espera' else 'Ingreso' end;
+
+        insert into MovimientoStock (CodProducto, IdDeposito, IdUM, FechaVencimiento, TipoMovimiento, CantidadModificada)
+        values (@CodProducto, @IdDeposito, @IdUM, @FechaVencimiento, @TipoMovimiento, @Cantidad);
+
+        declare @IdMovimiento int = scope_identity();
+
+        insert into MovimientoCompra (IdMovimiento, NroCompra, PrecioUnitario)
+        values (@IdMovimiento, @NroCompra, @PrecioUnitario);
+
+        fetch next from item_cursor into @CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, @IdUM, @PrecioUnitario;
+    end
+
+    close item_cursor;
+    deallocate item_cursor;
+end
+go
+
+declare @Items TVP_CompraItem;
+
+insert into @Items (CodProducto, Cantidad, FechaVencimiento, IdDeposito, IdUM, PrecioUnitario)
 values
-(51, @IdDeposito, @IdUM, '2026-06-04', getdate(), 'Ingreso', 100);
+(51, 100, '2026-06-01', 10, 1, 4200),  -- Bolsas de papel
+(54, 300, '2026-06-01', 10, 1, 1900),  -- Film stretch
+(55, 250, '2026-06-01', 10, 1, 5100);  -- Bolsas aluminizadas
 
-declare @IdMovimientoStock int = SCOPE_IDENTITY();
+exec usp_insertar_orden_compra_con_movimientos
+    @IdProveedor = 4,               -- Envaflex Industrial
+    @IdUsuario = 2,                 -- Usuario comprador
+    @EstadoOC = 'Recibida',        -- Si fuera 'Solicitada', se registrarían como 'Ingreso'
+    @Items = @Items;
 
-declare @IdEstadoOC int;
 
-select @IdEstadoOC = IdEstadoOC from EstadoOC where Nombre = 'Recibida';
+go
 
-insert into OrdenCompra (IdUsuario, IdEstadoOC, FechaCompra)
+-- variables de sectores (debes tener esta tabla Sector con estos nombres)
+declare @ReciboId int, @PolvosId int, @DulceriaId int, @NanoId int;
+
+select @ReciboId = IdSector from Sector where Nombre = 'Recibo';
+select @PolvosId = IdSector from Sector where Nombre = 'Polvos';
+select @DulceriaId = IdSector from Sector where Nombre = 'Dulceria';
+select @NanoId = IdSector from Sector where Nombre = 'Nano y Concentrados';
+
+-- tabla temporal con productos, depósitos, precio base, proveedor y sector
+declare @Productos table (
+    CodProducto int,
+    IdDeposito int,
+    PrecioBase decimal(18,2),
+    IdProveedor int,
+    IdSector int
+);
+
+-- insertar productos con sector asignado según depósito, sin sectores indefinidos
+insert into @Productos (CodProducto, IdDeposito, PrecioBase, IdProveedor, IdSector)
 values
-(2, @IdEstadoOC, getdate());
+(51, 10, 4200, 11, @PolvosId), -- Bolsa de papel Kraft multicapa 25 kg (Multicapas del Litoral S.A.)
+(52, 5, 1500, 9, @ReciboId), -- Separadores de cartón para filas de 5 bolsas (Cartonpack Argentina S.R.L.)
+(53, 5, 1800, 5, @ReciboId), -- Esquineros de cartón para protección estructural (Cartonería del Centro S.A.)
+(54, 10, 1900, 10, @PolvosId), -- Film stretch para inmovilizar carga (Zonda Films y Empaques S.R.L.)
+(55, 10, 5100, 4, @PolvosId), -- Bolsa de papel aluminizado trilaminada 800 g (Envaflex Industrial S.A.)
+(56, 5, 2500, 16, @ReciboId), -- Caja máster corrugada para 7 bolsas (Corrugados del Sur S.A.)
+(57, 5, 1400, 5, @ReciboId), -- Separadores de cartón internos (Cartonería del Centro S.A.)
+(58, 13, 3000, 13, @DulceriaId), -- Etiquetas con datos nutricionales (SelloSeguro S.R.L.)
+(59, 15, 3500, 15, @DulceriaId), -- Etiquetas RFID para trazabilidad logística (TecniGlass Empaques S.A.)
+(60, 12, 2800, 12, @DulceriaId), -- Caja con recubrimiento antihumedad interno (EcoPacking Solutions S.A.)
+(61, 6, 3100, 16, @PolvosId), -- Caja máster para leche en polvo 400 g (Corrugados del Sur S.A.)
+(62, 7, 3200, 16, @PolvosId), -- Caja máster para leche en polvo 800 g (Corrugados del Sur S.A.)
+(63, 21, 4000, 21, @NanoId), -- Bolsa para leche entera sin impresión 53x92x14 cm (Bolsaflex Industrial S.A.)
+(64, 21, 4200, 2, @NanoId), -- Bolsa para suero en polvo con impresión 53x97x14 cm (TecnoEnvases SRL)
+(65, 21, 4100, 2, @NanoId), -- Bolsa para polvo con impresión 53x97x14 cm (TecnoEnvases SRL)
+(66, 9, 1600, 9, @PolvosId), -- Separador para palletizar 1x1.20 mts (Cartonpack Argentina S.R.L.)
+(67, 13, 2900, 13, @DulceriaId), -- Termoetiqueta 58x43 mm cono 70 (SelloSeguro S.R.L.)
+(68, 3, 4500, 3, @ReciboId), -- Pallets de madera estandarizados (Grupo Barriopack S.A.)
+(69, 10, 1950, 10, @PolvosId), -- Film stretch para pallets (Zonda Films y Empaques S.R.L.)
+(70, 22, 1200, 22, @NanoId), -- Hipoclorito de sodio al 100% (Química Pampeana S.A.)
+(71, 22, 1100, 22, @NanoId), -- Producto de limpieza industrial (Deptacid NT) (Química Pampeana S.A.)
+(72, 22, 1300, 22, @NanoId), -- Soda cáustica (hidróxido de sodio) (Química Pampeana S.A.)
+(73, 12, 2500, 12, @DulceriaId), -- Recupero de gruesos polvos (EcoPacking Solutions S.A.)
+(74, 9, 1500, 9, @PolvosId), -- Separadores de cartón para cajas (Cartonpack Argentina S.R.L.)
+(75, 19, 2700, 19, @NanoId), -- Cinta de seguridad industrial (Precintados La Esperanza S.R.L.)
+(76, 23, 6000, 23, @NanoId), -- Envase plástico para dulce de leche 400 g (fit) (PlastiPack SRL)
+(77, 23, 6100, 23, @NanoId), -- Envase plástico para dulce de leche 400 g (repostero) (PlastiPack SRL)
+(78, 23, 6200, 23, @NanoId), -- Envase plástico para dulce de leche 1 kg (repostero) (PlastiPack SRL)
+(79, 24, 2200, 24, @NanoId), -- Tapa de aluminio para envase plástico 1 kg (AluTapas Argentina S.A.)
+(80, 13, 3100, 13, @DulceriaId), -- Etiqueta para dulce de leche 450 g (SelloSeguro S.R.L.)
+(81, 23, 6300, 23, @NanoId), -- Envase plástico para dulce de leche 1 kg (familiar) (PlastiPack SRL)
+(82, 5, 1400, 5, @ReciboId), -- Caja cartón para 6 envases de 1 kg dulce de leche (Cartonería del Centro S.A.)
+(88, 9, 1300, 9, @PolvosId), -- Separadores antideslizantes 1200x1000 mm (Cartonpack Argentina S.R.L.)
+(90, 22, 1400, 22, @NanoId), -- Dióxido de titanio (Química Pampeana S.A.)
+(91, 23, 6400, 23, @NanoId), -- Envase plástico 4 kg blanco sin impresión (PlastiPack SRL)
+(92, 12, 2600, 12, @DulceriaId), -- Recupero dulce relleno (EcoPacking Solutions S.A.)
+(93, 16, 1500, 16, @PolvosId); -- Caja wrap around 6 x 800 g marrón lisa (Corrugados del Sur S.A.)
 
-declare @NroCompra int = SCOPE_IDENTITY();
+-- variables para iterar
+declare @I int = 1;
+declare @Max int = 100;
 
-insert into MovimientoCompra (IdMovimiento, NroCompra, PrecioUnitario)
-values
-(@NuevoID, @NroCompra, 4000)
+while @I <= @Max
+begin
+    declare @Items tvp_compraitem;  -- asumiendo definición correcta del TVP
 
+    -- usuario aleatorio entre 2 y 8 usando mejor aleatoriedad
+    declare @IdUsuario int = 2 + cast(rand(checksum(newid())) * 7 as int);
+
+    -- estado alternado
+    declare @EstadoOC nvarchar(50) = case when @I % 2 = 0 then 'Solicitada' else 'Recibida' end;
+
+    -- número de productos para esta orden (3 a 6)
+    declare @CantItems int = 3 + cast(rand(checksum(newid())) * 4 as int);
+
+    declare @ProdIndex int = 1;
+
+    while @ProdIndex <= @CantItems
+    begin
+        -- elegir producto aleatorio con order by newid()
+        declare 
+            @CodProducto int, 
+            @IdDeposito int, 
+            @PrecioBase decimal(18,2), 
+            @IdProveedor int;
+
+        select top 1 
+            @CodProducto = CodProducto, 
+            @IdDeposito = IdDeposito, 
+            @PrecioBase = PrecioBase, 
+            @IdProveedor = IdProveedor
+        from @Productos
+        order by newid();
+
+        -- cantidad y precio con variación usando mejor aleatoriedad
+        declare @Cantidad decimal(15,2) = round(50 + rand(checksum(newid())) * 200, 2);
+        declare @PrecioUnitario decimal(18,2) = round(@PrecioBase * (0.9 + rand(checksum(newid())) * 0.2), 2);
+
+        -- fechavencimiento 180 días +/- 30 días desde hoy
+        declare @FechaVencimiento datetime = dateadd(day, 150 + cast(rand(checksum(newid())) * 60 as int), getdate());
+
+        -- insertar en @Items
+        insert into @Items (CodProducto, Cantidad, FechaVencimiento, IdDeposito, IdUM, PrecioUnitario)
+        values (@CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, 1, @PrecioUnitario);
+
+        set @ProdIndex += 1;
+    end
+
+    -- obtener proveedor de primer producto en @Items para la orden
+    declare @IdProveedorSeleccionado int;
+    select top 1 @IdProveedorSeleccionado = p.IdProveedor
+    from @Items i
+    join @Productos p on i.CodProducto = p.CodProducto;
+
+    -- generar fecha de compra aleatoria entre 1/1/2020 y hoy
+    declare @FechaInicio datetime = '2020-01-01';
+    declare @FechaFin datetime = getdate();
+    declare @DiasTotal int = datediff(day, @FechaInicio, @FechaFin);
+    declare @DiasRandom int = cast(rand(checksum(newid())) * @DiasTotal as int);
+    declare @FechaCompra datetime = dateadd(day, @DiasRandom, @FechaInicio);
+
+    -- ejecutar procedimiento para insertar la orden con sus movimientos y fecha de compra aleatoria
+    exec usp_insertar_orden_compra_con_movimientos
+        @IdProveedor = @IdProveedorSeleccionado,
+        @IdUsuario = @IdUsuario,
+        @EstadoOC = @EstadoOC,
+        @FechaCompra = @FechaCompra,
+        @Items = @Items;
+
+    set @I += 1;
+end
+go
