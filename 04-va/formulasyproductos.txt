@@ -1,0 +1,39 @@
+| CodProducto | DescripcionProducto                              | IdFormula | DescripcionFormula                                                                                   |
+|-------------|--------------------------------------------------|-----------|--------------------------------------------------------------------------------------------------------|
+| 1           | Dulce de leche repostero industrial              | 1         | Fórmula con alta proporción de sólidos totales (70%), menor humedad, ideal para horneado y repostería.|
+| 2           | Dulce de leche clásico para untar Marca Blanca   | 2         | Fórmula con textura suave, 62% sólidos, color caramelo claro, pensada para consumo directo.            |
+| 3           | Dulce de leche alfajor exportación               | 3         | Alto contenido en sólidos (75%), color oscuro, sabor intenso, diseñado para exportación a Europa.     |
+| 4           | Dulce de leche baja en lactosa                   | 4         | Tratamiento enzimático previo, <0.5% lactosa, sabor tradicional conservado.                            |
+
+| 5           | Leche en polvo entera 26% grasa                  | 5         | Secado spray, grasa 26%, diseñada para disolución instantánea en agua caliente o fría.                |
+| 6           | Leche en polvo descremada <1% grasa              | 6         | Baja en grasa, alto contenido proteico, ideal para dietas y deportes.                                 |
+| 7           | Leche en polvo descremada Rastafari <1% grasa    | 7         | Alta proteína, ideal para panificación y alimentos infantiles.                                        |
+| 8           | Leche en polvo entera Habanito 26% grasa         | 8         | Alta en grasa para sabor cremoso y textura óptima en repostería.                                      |
+| 9           | Leche en polvo descremada Capitán del Cosmo <1%  | 9         | Baja en grasa, ideal para producción de alimentos infantiles y dietéticos.                            |
+| 10          | Leche en polvo entera La Porteña 25% grasa       | 10        | Perfecta para panadería y alfajores con sabor intenso.                                                |
+| 11          | Leche en polvo descremada El Correntino <0.5%    | 11        | Muy baja en grasa, alto contenido proteico para uso industrial y dietético.                           |
+| 12          | Leche en polvo entera La Ruca 27% grasa          | 12        | Alta cremosidad y sabor pleno, recomendada para rellenos y productos premium.                         |
+| 13          | Leche en polvo descremada La Chacarera <1% grasa | 13        | Alta solubilidad, ideal para mezclas lácteas y dietas especiales.                                     |
+| 14          | Leche en polvo entera El Gauchito 26% grasa      | 14        | Para usos industriales que requieren alta calidad y sabor intenso.                                    |
+| 15          | Leche en polvo descremada El Bombón <0.8% grasa  | 15        | Muy bajo contenido graso y buena solubilidad para bebidas lácteas.                                    |
+| 16          | Leche en polvo entera La Abuela 25% grasa        | 16        | Sabor tradicional y textura cremosa, óptima para productos clásicos.                                  |
+
+| 17          | Concentrado lácteo evaporado 2x                  | 17        | Concentración al 50% por evaporación, estable para transporte sin refrigeración.                      |
+| 18          | Concentrado proteico lácteo 80%                  | 18        | Separación por membrana, 80% proteínas, bajo contenido de lactosa, uso deportivo o nutricional.        |
+
+| 19          | Dulce de leche clásico para untar Rastafari      | 19        | Textura cremosa, 60% sólidos, color caramelo medio, ideal para alfajores.                             |
+| 20          | Dulce de leche clásico para untar Habanito       | 20        | Suave y dulce, 63% sólidos, color caramelo dorado, pensado para paladares exigentes.                  |
+| 21          | Dulce de leche clásico para untar Capitán Cosmo  | 21        | Fórmula con cuerpo, 61% sólidos, color caramelo oscuro, ideal para untar o rellenar.                  |
+| 22          | Dulce de leche clásico para untar La Porteña     | 22        | Textura aterciopelada, 62% sólidos, color caramelo claro, para uso gourmet.                           |
+| 23          | Dulce de leche clásico para untar El Correntino  | 23        | Sabor tradicional, 60% sólidos, color caramelo medio, textura cremosa.                                |
+| 24          | Dulce de leche clásico para untar La Ruca        | 24        | Ideal para rellenos, 62% sólidos, color caramelo claro, sabor equilibrado.                            |
+| 25          | Dulce de leche clásico para untar La Chacarera   | 25        | Textura firme, 63% sólidos, color caramelo medio, para consumo directo y rellenos.                    |
+| 26          | Dulce de leche clásico para untar El Gauchito    | 26        | Sabor intenso, 61% sólidos, color caramelo oscuro, para rellenos premium.                             |
+| 27          | Dulce de leche clásico para untar El Bombón      | 27        | Cremoso y dulce, 62% sólidos, color caramelo claro, para consumo directo.                             |
+| 28          | Dulce de leche clásico para untar La Abuela      | 28        | Textura tradicional, 60% sólidos, color caramelo medio, sabor casero.                                 |
+| 29          | Dulce de leche conito industrial 25kg   | 29        | Fórmula semidura para modelado, 60% sólidos, color caramelo medio, ideal para productos moldeados. |
+| 30          | Dulce de leche alfajorero estándar 25kg | 30        | Alta viscosidad, 62% sólidos, sabor intenso, pensado para relleno de alfajores.                    |
+| 31          | Relleno alfajorero tradicional 25kg     | 31        | Textura firme y estable, 62.5% sólidos, diseñado para líneas automáticas de relleno.               |
+| 32          | Relleno alfajorero tradicional 10kg     | 32        | Mismo perfil que presentación de 25kg, en formato reducido para lotes pequeños o pruebas.          |
+| 33          | Dulce de leche familiar balde 4kg       | 33        | Consistencia media, 60% sólidos, pensado para fraccionamiento y uso doméstico.                     |
+| 34          | Dulce de leche repostero pouch 1kg      | 34        | Textura consistente para decoración y horneado, 63% sólidos, apto para aplicación directa.         |
