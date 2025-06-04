@@ -246,14 +246,17 @@ create table MovimientoStock (
     FechaVencimiento datetime not null,
     FechaMovimiento datetime not null default getdate(),
     TipoMovimiento varchar(7) not null,
-    CantidadModificada decimal(15,4) not null,
+    CantidadModificada decimal(15,2) not null,
     --Lote nvarchar(255) not null, -- CodProducto-FechaVencimiento
 
     constraint PK_MovimientoStock primary key (IdMovimiento),
     constraint FK_MovimientoStock_Producto foreign key (CodProducto) references Producto(CodProducto),
     constraint FK_MovimientoStock_Deposito foreign key (IdDeposito) references Deposito(IdDeposito),
     constraint FK_MovimientoStock_UnidadMedida foreign key (IdUM) references UnidadMedida(IdUM),
-    constraint CK_MovimientoStock_TipoMovimiento check (TipoMovimiento in ('Ingreso', 'Egreso'))
+    constraint CK_MovimientoStock_TipoMovimiento check (TipoMovimiento in ('Ingreso', 'Egreso', 'Espera')) -- CAMBIOS: Se agrega espera
+    -- Ya por ejemplo en órdenes de compra se tiene que esperar para hacer válido el movimiento hasta que se reciba el producto.
+    -- entonces el estado espera significa que espera a las órdenes a que estén en los estados correctos.
+    -- el dato está cargado pero se filtra para que no aparezca en stock.
 );
 
 create table MovimientoFabricacion (
@@ -291,7 +294,7 @@ create table OrdenReposicionDetalle (
     NroReposicion int,
     CodProducto int,
     IdUM int not null, -- CAMBIOS: se agrego
-    Cantidad decimal(15,4),
+    Cantidad decimal(15,2),
 
 
     constraint PK_OrdenReposicionDetalle primary key (NroReposicion, CodProducto),
@@ -416,11 +419,13 @@ create table EstadoOC (
 
 create table OrdenCompra (
     NroCompra int identity(1,1),
+    IdProveedor int not null,
     IdUsuario int not null,
     IdEstadoOC int not null,
     FechaCompra datetime not null,
 
     constraint PK_OrdenCompra primary key (NroCompra),
+    constraint FK_OrdenCompra_Proveedor foreign key (IdProveedor) references Proveedor(IdProveedor),
     constraint FK_OrdenCompra_Usuario foreign key (IdUsuario) references Usuario(IdUsuario),
     constraint FK_OrdenCompra_EstadoOC foreign key (IdEstadoOC) references EstadoOC(IdEstadoOC)
 );
@@ -429,11 +434,11 @@ create table MovimientoCompra (
     IdMovimiento int,
     NroCompra int,
     PrecioUnitario decimal(18,2) not null,
-    Cantidad int not null, -- CAMBIOS: se agrego
+    -- Cantidad int not null, -- CAMBIOS: se agrego NO SE NECESITA ESTA EN MOVIMIENTO STOCK
 
     constraint PK_MovimientoCompra primary key (IdMovimiento, NroCompra),
     constraint FK_MovimientoCompra_MovimientoStock foreign key (IdMovimiento) references MovimientoStock(IdMovimiento),
     constraint FK_MovimientoCompra_OrdenCompra foreign key (NroCompra) references OrdenCompra(NroCompra),
-    constraint CK_MovimientoCompra_Cantidad check (Cantidad > 0),
+    --constraint CK_MovimientoCompra_Cantidad check (Cantidad > 0),
     constraint CK_MovimientoCompra_PrecioUnitario check (PrecioUnitario >= 0)
 );

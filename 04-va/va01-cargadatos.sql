@@ -416,7 +416,32 @@ go
 set identity_insert Usuario on;
 
 insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
-values (1, 'Admin123', 'Pepe', 'Argento', 'pepe.argento@gmail.com');
+values (1, 'MateAmargo2025!', 'Pepe', 'Argento', 'pepe.argento@gmail.com');
+
+
+-- Usuarios para ordenes de compra
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (2, 'AveCesar#Imperium', 'Augusto', 'Cesar', 'augusto.cesar@gmail.com');
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (3, 'LocuraReal_1496', 'Juana', 'La Loca', 'juana.laloca@gmail.com');
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (4, 'Tango&Fernet_22', 'Carlos', 'Martínez', 'carlos.martinez@gmail.com');
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (5, 'LaVidaEsQueso!', 'María', 'Pérez', 'maria.perez@gmail.com');
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (6, 'LuchoTheCoder#9', 'Luis', 'Fernández', 'luis.fernandez@gmail.com');
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (7, 'García$2025#Café', 'Ana', 'García', 'ana.garcia@gmail.com');
+
+insert into Usuario (IdUsuario, Clave, Nombre, Apellido, Email)
+values (8, 'L0pezRock&Roll', 'Ricardo', 'López', 'ricardo.lopez@gmail.com');
+
+
 
 set identity_insert Usuario off;
 
@@ -944,36 +969,48 @@ select @PolvosId = IdSector from Sector where Nombre = 'Polvos';
 select @DulceriaId = IdSector from Sector where Nombre = 'Dulceria';
 select @NanoId = IdSector from Sector where Nombre = 'Nano y Concentrados';
 
--- Depositos sector Recibo (recepción de materia prima láctea)
-insert into Deposito (Nombre, Descripcion, IdSector) values
-('Tanque Leche Cruda 1', 'Tanque de recepción de leche cruda 1', @ReciboId),
-('Tanque Leche Cruda 2', 'Tanque de recepción de leche cruda 2', @ReciboId),
-('Tanque Agua', 'Tanque para agua de proceso', @ReciboId),
-('Tanque Crema', 'Tanque para crema', @ReciboId);
+set IDENTITY_INSERT Deposito on;
 
--- Depositos sector Polvos (almacenamiento de ingredientes en polvo)
-insert into Deposito (Nombre, Descripcion, IdSector) values
-('Silo Leche en Polvo', 'Silo para leche en polvo', @PolvosId),
-('Silo Suero en Polvo', 'Silo para suero en polvo', @PolvosId),
-('Silo Caseína', 'Silo para caseína en polvo', @PolvosId),
-('Depósito Aditivos', 'Depósito para aditivos en polvo', @PolvosId),
-('Depósito Envases Polvo', 'Depósito para envases de polvo', @PolvosId);
+-- Depósitos sector Recibo (recepción de materia prima láctea)
+insert into Deposito (IdDeposito, Nombre, Descripcion, IdSector) values
+(1, 'Tanque Leche Cruda 1', 'Tanque de recepción de leche cruda 1', @ReciboId),
+(2, 'Tanque Leche Cruda 2', 'Tanque de recepción de leche cruda 2', @ReciboId),
+(3, 'Tanque Agua', 'Tanque para agua de proceso', @ReciboId),
+(4, 'Tanque Crema', 'Tanque para crema', @ReciboId),
+(5, 'Recibo - Depósito General', 'Depósito general de recibo', @ReciboId);
 
--- Depositos sector Dulcería (almacenamiento y proceso de productos dulces lácteos)
-insert into Deposito (Nombre, Descripcion, IdSector) values
-('Depósito Azúcar', 'Depósito de azúcar para dulcería', @DulceriaId),
-('Tanque Jarabe', 'Tanque para jarabes', @DulceriaId),
-('Depósito Saborizantes', 'Depósito para saborizantes', @DulceriaId),
-('Depósito Empaques Dulces', 'Depósito de empaques para dulces', @DulceriaId);
+-- Depósitos sector Polvos (almacenamiento de ingredientes en polvo)
+insert into Deposito (IdDeposito, Nombre, Descripcion, IdSector) values
+(6, 'Silo Leche en Polvo 1', 'Silo para leche en polvo 1', @PolvosId),
+(7, 'Silo Leche en Polvo 2', 'Silo para leche en polvo 2', @PolvosId),
+(8, 'Silo Suero en Polvo', 'Silo para suero en polvo', @PolvosId),
+(9, 'Depósito Aditivos', 'Depósito para aditivos en polvo', @PolvosId),
+(10, 'Depósito Envases Polvo', 'Depósito para envases de polvo', @PolvosId),
+(11, 'Polvos - Depósito General', 'Depósito general del sector Polvos', @PolvosId);
 
--- Depositos sector Nano y Concentrados (almacenamiento de productos concentrados y nano)
-insert into Deposito (Nombre, Descripcion, IdSector) values
-('Tanque Concentrado Proteico', 'Tanque para concentrado proteico', @NanoId),
-('Tanque Concentrado Grasa', 'Tanque para concentrado de grasa', @NanoId),
-('Depósito Nano Partículas', 'Depósito para nano partículas', @NanoId),
-('Depósito Ingredientes Activos', 'Depósito para ingredientes activos', @NanoId),
-('Depósito Envases Concentrados', 'Depósito para envases de concentrados', @NanoId);
+-- Depósitos sector Dulcería (almacenamiento y proceso de productos dulces lácteos)
+insert into Deposito (IdDeposito, Nombre, Descripcion, IdSector) values
+(12, 'Depósito Azúcar', 'Depósito de azúcar para dulcería', @DulceriaId),
+(13, 'Tanque Jarabe', 'Tanque para jarabes', @DulceriaId),
+(14, 'Depósito Saborizantes', 'Depósito para saborizantes', @DulceriaId),
+(15, 'Depósito Empaques Dulces 1', 'Depósito de empaques para dulces 1', @DulceriaId),
+(16, 'Depósito Empaques Dulces 2', 'Depósito de empaques para dulces 2', @DulceriaId),
+(17, 'Dulcería - Depósito General', 'Depósito general del sector Dulcería', @DulceriaId);
+
+-- Depósitos sector Nano y Concentrados (almacenamiento de productos concentrados y nano)
+insert into Deposito (IdDeposito, Nombre, Descripcion, IdSector) values
+(18, 'Tanque Concentrado Proteico', 'Tanque para concentrado proteico', @NanoId),
+(19, 'Tanque Concentrado Grasa 1', 'Tanque para concentrado de grasa', @NanoId),
+(20, 'Tanque Concentrado Grasa 2', 'Tanque para concentrado de grasa', @NanoId),
+(21, 'Depósito Nano Partículas', 'Depósito para nano partículas', @NanoId),
+(22, 'Depósito Ingredientes Activos', 'Depósito para ingredientes activos', @NanoId),
+(23, 'Depósito Envases Concentrados', 'Depósito para envases de concentrados', @NanoId),
+(24, 'Nano - Depósito General', 'Depósito general del sector Nano y Concentrados', @NanoId);
+
+set IDENTITY_INSERT Deposito off;
 go
+
+
 
 -- UnidadMedida
 insert into UnidadMedida (Nombre, Descripcion)
@@ -988,7 +1025,8 @@ values
 ('BSA50', 'Bolsa de 50 kilogramos'),
 ('BSA100', 'Bolsa de 100 kilogramos'),
 ('UN', 'Unidad'),
-('CAJA', 'Caja de productos'),
+('CA', 'Caja de productos'),
+('CA25KG', 'Caja de productos 25KG'),
 ('BIDON', 'Bidón de almacenamiento'),
 ('SACO', 'Saco de material'),
 ('BARRIL', 'Barril o tonel'),
@@ -1130,3 +1168,41 @@ insert into ProveedorTelefono (IdProveedor, IdTelefono) values
 (19, 28), (19, 29),
 (20, 30);
 go
+
+
+-- AHORA VENDRIA
+-- OrdenCompra
+-- MovimientoCompra
+-- MovimientoStock
+
+-- Si hago una orden de compra a la vez crea unos detalles (movimiento de Entrega)
+
+usp_insertar_orden_compra_con_movimientos ''
+
+declare @IdDeposito int;
+declare @IdUM int;
+
+
+select @IdDeposito = IdDeposito from Deposito where Nombre = 'Depósito Envases Polvo'
+select @IdUM = IdUm from UnidadMedida where Nombre = 'CA25KG'
+
+insert into MovimientoStock (CodProducto, IdDeposito, IdUM, FechaVencimiento, FechaMovimiento, TipoMovimiento, CantidadModificada)
+values
+(51, @IdDeposito, @IdUM, '2026-06-04', getdate(), 'Ingreso', 100);
+
+declare @IdMovimientoStock int = SCOPE_IDENTITY();
+
+declare @IdEstadoOC int;
+
+select @IdEstadoOC = IdEstadoOC from EstadoOC where Nombre = 'Recibida';
+
+insert into OrdenCompra (IdUsuario, IdEstadoOC, FechaCompra)
+values
+(2, @IdEstadoOC, getdate());
+
+declare @NroCompra int = SCOPE_IDENTITY();
+
+insert into MovimientoCompra (IdMovimiento, NroCompra, PrecioUnitario)
+values
+(@NuevoID, @NroCompra, 4000)
+

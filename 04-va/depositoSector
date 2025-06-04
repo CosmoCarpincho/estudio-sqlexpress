@@ -1,0 +1,26 @@
+| IdDeposito | Nombre                          | IdSector     |
+|------------|----------------------------------|--------------|
+| 1          | Tanque Leche Cruda 1            | @ReciboId    |
+| 2          | Tanque Leche Cruda 2            | @ReciboId    |
+| 3          | Tanque Agua                     | @ReciboId    |
+| 4          | Tanque Crema                    | @ReciboId    |
+| 5          | Recibo - Depósito General       | @ReciboId    |
+| 6          | Silo Leche en Polvo 1           | @PolvosId    |
+| 7          | Silo Leche en Polvo 2           | @PolvosId    |
+| 8          | Silo Suero en Polvo             | @PolvosId    |
+| 9          | Depósito Aditivos               | @PolvosId    |
+| 10         | Depósito Envases Polvo          | @PolvosId    |
+| 11         | Polvos - Depósito General       | @PolvosId    |
+| 12         | Depósito Azúcar                 | @DulceriaId  |
+| 13         | Tanque Jarabe                   | @DulceriaId  |
+| 14         | Depósito Saborizantes           | @DulceriaId  |
+| 15         | Depósito Empaques Dulces 1      | @DulceriaId  |
+| 16         | Depósito Empaques Dulces 2      | @DulceriaId  |
+| 17         | Dulcería - Depósito General     | @DulceriaId  |
+| 18         | Tanque Concentrado Proteico     | @NanoId      |
+| 19         | Tanque Concentrado Grasa 1      | @NanoId      |
+| 20         | Tanque Concentrado Grasa 2      | @NanoId      |
+| 21         | Depósito Nano Partículas        | @NanoId      |
+| 22         | Depósito Ingredientes Activos   | @NanoId      |
+| 23         | Depósito Envases Concentrados   | @NanoId      |
+| 24         | Nano - Depósito General         | @NanoId      |
