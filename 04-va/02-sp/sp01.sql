@@ -1,4 +1,6 @@
-create procedure usp_cantidad_usuarios_por_sector
+-- SP PRINCIPALES --
+
+create or alter procedure usp_cantidad_usuarios_por_sector
 as
 begin
     select 
@@ -15,6 +17,9 @@ begin
     order by NombreSector;
 end
 go
+
+-- exec usp_cantidad_usuarios_por_sector;
+-- go
 
 create or alter procedure usp_usuarios_pertenecen_a_sector
     @NombreSector nvarchar(100)
@@ -38,9 +43,19 @@ begin
 end;
 go
 
-exec usp_usuarios_pertenecen_a_sector 'Dulceria';
-go
+-- exec usp_usuarios_pertenecen_a_sector 'Dulceria';
+-- go
     
+
+
+
+
+
+
+
+
+
+-- SP EXTRAS --
 
 create or alter procedure usp_cantidad_de_usuarios_por_permiso
 as
@@ -59,8 +74,8 @@ begin
 end;
 go
 
-exec usp_cantidad_de_usuarios_por_permiso
-go
+-- exec usp_cantidad_de_usuarios_por_permiso
+-- go
 
 create or alter procedure usp_cantidad_de_usuarios_por_rol
 as
@@ -79,8 +94,8 @@ end;
 
 go
 
-exec usp_cantidad_de_usuarios_por_rol
-go
+-- exec usp_cantidad_de_usuarios_por_rol
+-- go
 
 
 create or alter procedure usp_permisos_de_usuario
@@ -109,12 +124,12 @@ begin
 end;
 go
 
-declare @IdUsuario int = (select IdUsuario from UsuarioROl ur join Rol r on ur.IdRol = r.IdRol where r.Nombre = 'Admin');
-print @IdUsuario
+-- declare @IdUsuario int = (select IdUsuario from UsuarioROl ur join Rol r on ur.IdRol = r.IdRol where r.Nombre = 'Admin');
+-- print @IdUsuario
 
-exec usp_permisos_de_usuario @IdUsuario
-exec usp_permisos_de_usuario 33
-go
+-- exec usp_permisos_de_usuario @IdUsuario
+-- exec usp_permisos_de_usuario 33
+-- go
 
 
 -- Lo mismo pero para sector_ordenes:
@@ -138,8 +153,8 @@ begin
 end
 go
 
-exec usp_cantidad_usuarios_por_sector_orden;
-go
+-- exec usp_cantidad_usuarios_por_sector_orden;
+-- go
 
 
 create or alter procedure usp_sector_orden_del_usuario
@@ -166,9 +181,9 @@ go
 
 
 
-exec usp_sector_orden_del_usuario 1;
-exec usp_sector_orden_del_usuario 33;
-go
+-- exec usp_sector_orden_del_usuario 1;
+-- exec usp_sector_orden_del_usuario 33;
+-- go
 
 create or alter procedure usp_sector_ordenes_usuarios_info
 as

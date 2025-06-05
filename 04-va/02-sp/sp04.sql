@@ -27,6 +27,10 @@ begin
 end
 go
 
+exec usp_obtener_produccion_mensual_por_producto;  -- Sin parámetro devuelve todos los productos
+exec usp_obtener_produccion_mensual_por_producto 36;
+go
+
 create or alter procedure usp_obtener_produccion_anual_por_producto
     @CodProducto int = null
 as
@@ -52,6 +56,12 @@ begin
         Anio;
 end
 go
+
+exec usp_obtener_produccion_anual_por_producto;     -- Sin parámetro devuelve todos los productos anualmente
+exec usp_obtener_produccion_anual_por_producto 36;
+go
+
+
 
 create or alter procedure usp_obtener_produccion_mensual_todos_productos_por_fecha
     @FechaInicio datetime = null,
@@ -90,11 +100,7 @@ begin
 end
 go 
 
-exec usp_obtener_produccion_mensual_por_producto;  -- Sin parámetro devuelve todos los productos
-exec usp_obtener_produccion_mensual_por_producto 36;
-
-exec usp_obtener_produccion_anual_por_producto;     -- Sin parámetro devuelve todos los productos anualmente
-exec usp_obtener_produccion_anual_por_producto 36;
 
 exec usp_obtener_produccion_mensual_todos_productos_por_fecha;  -- Parámetros opcionales, sin pasar devuelve todo el historial
 exec usp_obtener_produccion_mensual_todos_productos_por_fecha '2023-04-01', '2024-06-01'
+go

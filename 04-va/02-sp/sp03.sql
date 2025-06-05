@@ -19,7 +19,7 @@ begin
 end;
 go
 
-exec usp_stock_por_producto 94 --Leche cruda
+exec usp_stock_por_producto @CodProducto = 94 --Leche cruda
 exec usp_stock_por_producto 52 -- Separador carton
 exec usp_stock_por_producto 14 --Leche en Polvo
 exec usp_stock_por_producto 51 -- Bolsa papel kraft
@@ -81,6 +81,7 @@ begin
     order by p.Descripcion;
 end;
 go
+exec usp_stock_por_deposito @IdDeposito = 22;
 
 exec usp_stock_por_deposito @IdDeposito = 1;
 exec usp_stock_por_deposito @IdDeposito = 12;
