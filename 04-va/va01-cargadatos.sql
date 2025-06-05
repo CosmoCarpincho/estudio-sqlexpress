@@ -976,7 +976,7 @@ exec usp_insertar_formula_producto
     @NombreFormula = 'Fórmula DDL Untable Bombón 2025',
     @DescripcionFormula = 'Cremoso y dulce, 62% sólidos, color caramelo claro, para consumo directo.';
 
-exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = @IdFormula;
+exec usp_relacionar_usuario_formula @IdUsuario = 1, @IdFormula = 27;
 exec usp_relacionar_usuario_formula @IdUsuario = @IdUsuarioDulceria02, @IdFormula = 27;
 
 -- 12. Dulce de leche clásico para untar La Abuela
@@ -1304,6 +1304,7 @@ begin
         CodProducto int,
         Cantidad decimal(15,2),
         FechaVencimiento datetime,
+        FechaMovimiento datetime,
         IdDeposito int,
         IdUM int,
         PrecioUnitario decimal(18,2)
@@ -1333,39 +1334,40 @@ begin
     insert into OrdenCompra (IdProveedor, IdUsuario, IdEstadoOC, FechaCompra)
     values (@IdProveedor, @IdUsuario, @IdEstadoOC, coalesce(@FechaCompra, getdate()));
 
-
     declare @NroCompra int = scope_identity();
 
     declare @CodProducto int, @Cantidad decimal(15,2), @FechaVencimiento datetime,
+            @FechaMovimiento datetime,  -- agregada variable
             @IdDeposito int, @IdUM int, @PrecioUnitario decimal(18,2),
             @TipoMovimiento varchar(7);
 
     declare item_cursor cursor for
-        select CodProducto, Cantidad, FechaVencimiento, IdDeposito, IdUM, PrecioUnitario
+        select CodProducto, Cantidad, FechaVencimiento, FechaMovimiento, IdDeposito, IdUM, PrecioUnitario
         from @Items;
 
     open item_cursor;
-    fetch next from item_cursor into @CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, @IdUM, @PrecioUnitario;
+    fetch next from item_cursor into @CodProducto, @Cantidad, @FechaVencimiento, @FechaMovimiento, @IdDeposito, @IdUM, @PrecioUnitario;
 
     while @@fetch_status = 0
     begin
         set @TipoMovimiento = case when @EstadoOC = 'Solicitada' then 'Espera' else 'Ingreso' end;
 
-        insert into MovimientoStock (CodProducto, IdDeposito, IdUM, FechaVencimiento, TipoMovimiento, CantidadModificada)
-        values (@CodProducto, @IdDeposito, @IdUM, @FechaVencimiento, @TipoMovimiento, @Cantidad);
+        insert into MovimientoStock (CodProducto, IdDeposito, IdUM, FechaVencimiento, FechaMovimiento, TipoMovimiento, CantidadModificada)
+        values (@CodProducto, @IdDeposito, @IdUM, @FechaVencimiento, @FechaMovimiento, @TipoMovimiento, @Cantidad);
 
         declare @IdMovimiento int = scope_identity();
 
         insert into MovimientoCompra (IdMovimiento, NroCompra, PrecioUnitario)
         values (@IdMovimiento, @NroCompra, @PrecioUnitario);
 
-        fetch next from item_cursor into @CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, @IdUM, @PrecioUnitario;
+        fetch next from item_cursor into @CodProducto, @Cantidad, @FechaVencimiento, @FechaMovimiento, @IdDeposito, @IdUM, @PrecioUnitario;
     end
 
     close item_cursor;
     deallocate item_cursor;
 end
 go
+
 
 declare @Items TVP_CompraItem;
 
@@ -1442,28 +1444,28 @@ values
 (92, 12, 2600, 12, @DulceriaId), -- Recupero dulce relleno (EcoPacking Solutions S.A.)
 (93, 16, 1500, 16, @PolvosId); -- Caja wrap around 6 x 800 g marrón lisa (Corrugados del Sur S.A.)
 
--- variables para iterar
 declare @I int = 1;
 declare @Max int = 100;
 
 while @I <= @Max
 begin
-    declare @Items tvp_compraitem;  -- asumiendo definición correcta del TVP
+    declare @Items tvp_compraitem;
 
-    -- usuario aleatorio entre 2 y 8 usando mejor aleatoriedad
     declare @IdUsuario int = 2 + cast(rand(checksum(newid())) * 7 as int);
-
-    -- estado alternado
     declare @EstadoOC nvarchar(50) = case when @I % 2 = 0 then 'Solicitada' else 'Recibida' end;
-
-    -- número de productos para esta orden (3 a 6)
     declare @CantItems int = 3 + cast(rand(checksum(newid())) * 4 as int);
+
+    -- Generar fecha de compra aleatoria entre 01/01/2020 y hoy
+    declare @FechaInicio datetime = '2020-01-01';
+    declare @FechaFin datetime = getdate();
+    declare @DiasTotal int = datediff(day, @FechaInicio, @FechaFin);
+    declare @DiasRandom int = cast(rand(checksum(newid())) * @DiasTotal as int);
+    declare @FechaCompra datetime = dateadd(day, @DiasRandom, @FechaInicio);
 
     declare @ProdIndex int = 1;
 
     while @ProdIndex <= @CantItems
     begin
-        -- elegir producto aleatorio con order by newid()
         declare 
             @CodProducto int, 
             @IdDeposito int, 
@@ -1478,34 +1480,30 @@ begin
         from @Productos
         order by newid();
 
-        -- cantidad y precio con variación usando mejor aleatoriedad
         declare @Cantidad decimal(15,2) = round(50 + rand(checksum(newid())) * 200, 2);
         declare @PrecioUnitario decimal(18,2) = round(@PrecioBase * (0.9 + rand(checksum(newid())) * 0.2), 2);
 
-        -- fechavencimiento 180 días +/- 30 días desde hoy
+        declare @FechaMovimiento datetime = @FechaCompra;
         declare @FechaVencimiento datetime = dateadd(day, 150 + cast(rand(checksum(newid())) * 60 as int), getdate());
 
-        -- insertar en @Items
-        insert into @Items (CodProducto, Cantidad, FechaVencimiento, IdDeposito, IdUM, PrecioUnitario)
-        values (@CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, 1, @PrecioUnitario);
+        declare @IdUM int;
+        select @IdUM =  IdUM from UnidadMedida where Nombre = 'LT';
+
+        insert into @Items (
+            CodProducto, Cantidad, FechaVencimiento, FechaMovimiento, IdDeposito, IdUM, PrecioUnitario
+        )
+        values (
+            @CodProducto, @Cantidad, @FechaVencimiento, @FechaMovimiento, @IdDeposito, 1, @PrecioUnitario
+        );
 
         set @ProdIndex += 1;
     end
 
-    -- obtener proveedor de primer producto en @Items para la orden
     declare @IdProveedorSeleccionado int;
     select top 1 @IdProveedorSeleccionado = p.IdProveedor
     from @Items i
     join @Productos p on i.CodProducto = p.CodProducto;
 
-    -- generar fecha de compra aleatoria entre 1/1/2020 y hoy
-    declare @FechaInicio datetime = '2020-01-01';
-    declare @FechaFin datetime = getdate();
-    declare @DiasTotal int = datediff(day, @FechaInicio, @FechaFin);
-    declare @DiasRandom int = cast(rand(checksum(newid())) * @DiasTotal as int);
-    declare @FechaCompra datetime = dateadd(day, @DiasRandom, @FechaInicio);
-
-    -- ejecutar procedimiento para insertar la orden con sus movimientos y fecha de compra aleatoria
     exec usp_insertar_orden_compra_con_movimientos
         @IdProveedor = @IdProveedorSeleccionado,
         @IdUsuario = @IdUsuario,
@@ -1516,6 +1514,7 @@ begin
     set @I += 1;
 end
 go
+
 
 
 declare @ReciboId int, @PolvosId int, @DulceriaId int, @NanoId int;
@@ -1537,65 +1536,71 @@ declare @Productos table (
 -- Más leche cruda de tambos bonaerenses
 insert into @Productos (CodProducto, IdDeposito, PrecioBase, IdProveedor, IdSector)
 values
-(94, 2, 106.32, 40, @ReciboId),
-(94, 1, 137.45, 29, @ReciboId),
-(94, 1, 120.89, 30, @ReciboId),
-(94, 2, 111.15, 31, @ReciboId),
-(94, 1, 147.62, 32, @ReciboId),
-(94, 2, 101.77, 33, @ReciboId),
-(94, 1, 129.34, 34, @ReciboId),
-(94, 2, 141.99, 35, @ReciboId),
-(94, 2, 97.88, 36, @ReciboId),
-(94, 1, 108.76, 37, @ReciboId),
-(94, 2, 119.24, 38, @ReciboId),
-(94, 1, 134.68, 39, @ReciboId),
-(94, 1, 145.21, 40, @ReciboId),
-(94, 2, 123.89, 29, @ReciboId),
-(94, 1, 113.05, 30, @ReciboId),
-(94, 2, 130.92, 31, @ReciboId),
-(94, 2, 118.44, 32, @ReciboId),
-(94, 1, 124.55, 33, @ReciboId),
-(94, 2, 127.73, 34, @ReciboId),
-(94, 1, 132.19, 35, @ReciboId),
-(94, 1, 140.03, 36, @ReciboId),
-(94, 2, 115.67, 37, @ReciboId),
-(94, 2, 122.78, 38, @ReciboId),
-(94, 1, 139.50, 39, @ReciboId),
-(94, 2, 89.10, 40, @ReciboId),
-(94, 1, 165.50, 29, @ReciboId),
-(94, 2, 82.30, 30, @ReciboId),
-(94, 1, 197.80, 31, @ReciboId),
-(94, 2, 103.45, 32, @ReciboId),
-(94, 1, 142.90, 33, @ReciboId),
-(94, 2, 208.75, 34, @ReciboId),
-(94, 1, 93.60, 35, @ReciboId),
-(94, 1, 185.20, 36, @ReciboId),
-(94, 2, 99.99, 37, @ReciboId),
-(94, 2, 114.70, 38, @ReciboId),
+(94, 2, 1060.32, 40, @ReciboId),
+(94, 1, 1370.45, 29, @ReciboId),
+(94, 1, 1200.89, 30, @ReciboId),
+(94, 2, 1110.15, 31, @ReciboId),
+(94, 1, 1470.62, 32, @ReciboId),
+(94, 2, 1010.77, 33, @ReciboId),
+(94, 1, 1290.34, 34, @ReciboId),
+(94, 2, 1410.99, 35, @ReciboId),
+(94, 2, 979.88, 36, @ReciboId),
+(94, 1, 1080.76, 37, @ReciboId),
+(94, 2, 1198.24, 38, @ReciboId),
+(94, 1, 1347.68, 39, @ReciboId),
+(94, 1, 1456.21, 40, @ReciboId),
+(94, 2, 1237.89, 29, @ReciboId),
+(94, 1, 1135.05, 30, @ReciboId),
+(94, 2, 1305.92, 31, @ReciboId),
+(94, 2, 1188.44, 32, @ReciboId),
+(94, 1, 1245.55, 33, @ReciboId),
+(94, 2, 1277.73, 34, @ReciboId),
+(94, 1, 1325.19, 35, @ReciboId),
+(94, 1, 1407.03, 36, @ReciboId),
+(94, 2, 1154.67, 37, @ReciboId),
+(94, 2, 1224.78, 38, @ReciboId),
+(94, 1, 1396.50, 39, @ReciboId),
+(94, 2, 897.10, 40, @ReciboId),
+(94, 1, 1654.50, 29, @ReciboId),
+(94, 2, 8247.30, 30, @ReciboId),
+(94, 1, 1974.80, 31, @ReciboId),
+(94, 2, 1034.45, 32, @ReciboId),
+(94, 1, 1428.90, 33, @ReciboId),
+(94, 2, 2085.75, 34, @ReciboId),
+(94, 1, 936.60, 35, @ReciboId),
+(94, 1, 1857.20, 36, @ReciboId),
+(94, 2, 995.99, 37, @ReciboId),
+(94, 2, 1144.70, 38, @ReciboId),
 (94, 1, 122.85, 39, @ReciboId),
-(94, 2, 91.45, 40, @ReciboId),
-(94, 1, 145.30, 29, @ReciboId),
-(94, 2, 137.00, 30, @ReciboId),
-(94, 1, 160.00, 31, @ReciboId),
-(94, 2, 100.00, 32, @ReciboId),
-(94, 1, 188.88, 33, @ReciboId),
-(94, 2, 129.40, 34, @ReciboId),
-(94, 1, 151.51, 35, @ReciboId),
-(94, 2, 80.00, 36, @ReciboId),
-(94, 1, 171.15, 37, @ReciboId),
-(94, 2, 138.90, 38, @ReciboId),
-(94, 1, 199.99, 39, @ReciboId);
+(94, 2, 9146.45, 40, @ReciboId),
+(94, 1, 1454.30, 29, @ReciboId),
+(94, 2, 1374.00, 30, @ReciboId),
+(94, 1, 1604.00, 31, @ReciboId),
+(94, 2, 1004.00, 32, @ReciboId),
+(94, 1, 1884.88, 33, @ReciboId),
+(94, 2, 1294.40, 34, @ReciboId),
+(94, 1, 1514.51, 35, @ReciboId),
+(94, 2, 804.00, 36, @ReciboId),
+(94, 1, 1714.15, 37, @ReciboId),
+(94, 2, 1384.90, 38, @ReciboId),
+(94, 1, 1994.99, 39, @ReciboId);
 
 declare @I int = 1;
 declare @Max int = 100;
 
 while @I <= @Max
 begin
-    declare @Items tvp_compraitem;  -- limpio para cada orden
+    declare @Items tvp_compraitem;
 
     declare @IdUsuario int = 2 + cast(rand(checksum(newid())) * 7 as int);
     declare @EstadoOC nvarchar(50) = case when @I % 2 = 0 then 'Solicitada' else 'Recibida' end;
     declare @CantItems int = 3 + cast(rand(checksum(newid())) * 4 as int);
+
+    declare @FechaInicio datetime = '2020-01-01';
+    declare @FechaFin datetime = getdate();
+    declare @DiasTotal int = datediff(day, @FechaInicio, @FechaFin);
+    declare @DiasRandom int = cast(rand(checksum(newid())) * @DiasTotal as int);
+    declare @FechaCompra datetime = dateadd(day, @DiasRandom, @FechaInicio);
 
     declare @ProdIndex int = 1;
 
@@ -1615,12 +1620,14 @@ begin
         from @Productos
         order by newid();
 
-        declare @Cantidad decimal(15,2) = round(50 + rand(checksum(newid())) * 200, 2);
+        declare @Cantidad decimal(15,2) = round(50 + rand(checksum(newid())) * 20000, 2);
         declare @PrecioUnitario decimal(18,2) = round(@PrecioBase * (0.9 + rand(checksum(newid())) * 0.2), 2);
-        declare @FechaVencimiento datetime = dateadd(day, 20 + cast(rand(checksum(newid())) * 20 as int), getdate());
 
-        insert into @Items (CodProducto, Cantidad, FechaVencimiento, IdDeposito, IdUM, PrecioUnitario)
-        values (@CodProducto, @Cantidad, @FechaVencimiento, @IdDeposito, 1, @PrecioUnitario);
+        declare @FechaMovimiento datetime = @FechaCompra;
+        declare @FechaVencimiento datetime = dateadd(hour, 96, @FechaMovimiento);
+
+        insert into @Items (CodProducto, Cantidad, FechaVencimiento, FechaMovimiento, IdDeposito, IdUM, PrecioUnitario)
+        values (@CodProducto, @Cantidad, @FechaVencimiento, @FechaMovimiento, @IdDeposito, 1, @PrecioUnitario);
 
         set @ProdIndex += 1;
     end
@@ -1630,12 +1637,6 @@ begin
     from @Items i
     join @Productos p on i.CodProducto = p.CodProducto
     order by newid();
-
-    declare @FechaInicio datetime = '2020-01-01';
-    declare @FechaFin datetime = getdate();
-    declare @DiasTotal int = datediff(day, @FechaInicio, @FechaFin);
-    declare @DiasRandom int = cast(rand(checksum(newid())) * @DiasTotal as int);
-    declare @FechaCompra datetime = dateadd(day, @DiasRandom, @FechaInicio);
 
     exec usp_insertar_orden_compra_con_movimientos
         @IdProveedor = @IdProveedorSeleccionado,
@@ -1647,6 +1648,7 @@ begin
     set @I += 1;
 end
 go
+
 
 -- LO PROXIMO ES ORDENES DE FABRICACION
 -- Primero se tendria que tener leche cruda. Que se recibe. (No se si ponerlo en compra)
@@ -1730,3 +1732,43 @@ go
 
 
 -- tambos del 29 al 40
+
+
+-- Falta poner unidad medida Listros en tambos
+-- Las cantidades son muy pequeñas . 20000 litros  procesa 3000000 mil por litro
+
+
+-- CREAR LINEAS GENERICAS
+
+-- Obtener los IdSector
+declare @IdSectorRecibo int = (select IdSector from Sector where Nombre = 'Recibo');
+declare @IdSectorPolvos int = (select IdSector from Sector where Nombre = 'Polvos');
+declare @IdSectorDulceria int = (select IdSector from Sector where Nombre = 'Dulceria');
+declare @IdSectorNano int = (select IdSector from Sector where Nombre = 'Nano y Concentrados');
+
+-- Habilitar IDENTITY_INSERT
+set identity_insert Linea on;
+
+insert into Linea (IdLinea, IdSector, Nombre, Descripcion)
+values
+-- 1 línea para Recibo
+(1, @IdSectorRecibo, 'Recibo Principal', 'Línea principal recibo'),
+
+-- 2 líneas para Polvos
+(2, @IdSectorPolvos, 'Secado Torre 1', 'Línea de polvos 1'),
+(3, @IdSectorPolvos, 'Secado Torre 2', 'Línea de polvos 2'),
+
+-- 3 líneas para Dulcería
+(4, @IdSectorDulceria, 'Dulce Línea 1', 'Producción de dulce 1'),
+(5, @IdSectorDulceria, 'Dulce Línea 2', 'Producción de dulce 2'),
+(6, @IdSectorDulceria, 'Dulce Línea 3', 'Producción de dulce 3'),
+
+-- 2 líneas para Nano y Concentrados
+(7, @IdSectorNano, 'Nano Proceso 1', 'Nano 1'),
+(8, @IdSectorNano, 'Concentrado 1', 'Nano 2');
+
+-- Deshabilitar IDENTITY_INSERT
+set identity_insert Linea off;
+go
+
+
