@@ -31,6 +31,37 @@ as
 begin
     set nocount on;
 
+    select u.IdUsuario
+    into #JefeRecibo
+    from Usuario u
+    inner join UsuarioRol ur on u.IdUsuario = ur.IdUsuario
+    inner join Rol r on ur.IdRol = r.IdRol
+    where r.Nombre = 'JefeRecibo';
+
+    -- SupervisorRecibo
+    select u.IdUsuario
+    into #SupervisorRecibo
+    from Usuario u
+    inner join UsuarioRol ur on u.IdUsuario = ur.IdUsuario
+    inner join Rol r on ur.IdRol = r.IdRol
+    where r.Nombre = 'SupervisorRecibo';
+
+    -- JefePolvos
+    select u.IdUsuario
+    into #JefePolvos
+    from Usuario u
+    inner join UsuarioRol ur on u.IdUsuario = ur.IdUsuario
+    inner join Rol r on ur.IdRol = r.IdRol
+    where r.Nombre = 'JefePolvos';
+
+    -- SupervisorPolvos
+    select u.IdUsuario
+    into #SupervisorPolvos
+    from Usuario u
+    inner join UsuarioRol ur on u.IdUsuario = ur.IdUsuario
+    inner join Rol r on ur.IdRol = r.IdRol
+    where r.Nombre = 'SupervisorPolvos';
+
     declare @IdUM int = (select IdUM from UnidadMedida where Nombre = 'LT');
 
     ----------------------
@@ -38,7 +69,7 @@ begin
     ----------------------
 
     declare @IdUsuarioOC int = (
-        select top 1 IdUsuario from #JefeRecibo order by newid()
+        select top 1 IdUsuario from Usuario where IdUsuario between 2 and 8 order by newid()
     );
 
     insert into OrdenCompra (IdProveedor, IdUsuario, IdEstadoOC)
@@ -59,7 +90,11 @@ begin
     -------------------------------------------------------------
 
     declare @IdUsuarioOF1 int = (
-        select top 1 IdUsuario from #SupervisorRecibo order by newid()
+        select top 1 IdUsuario from (
+            select IdUsuario from #JefeRecibo
+            union all
+            select IdUsuario from #SupervisorRecibo
+        ) as Recibo order by newid()
     );
 
     insert into OrdenFabricacion (IdFormula, IdLinea, IdEstadoOF, IdUsuario)
@@ -101,7 +136,11 @@ begin
     -------------------------------------------------------------
 
     declare @IdUsuarioOF2 int = (
-        select top 1 IdUsuario from #SupervisorRecibo order by newid()
+        select top 1 IdUsuario from (
+            select IdUsuario from #JefePolvos
+            union all
+            select IdUsuario from #SupervisorPolvos
+        ) as Polvos order by newid()
     );
 
     insert into OrdenFabricacion (IdFormula, IdLinea, IdEstadoOF, IdUsuario)
@@ -130,7 +169,11 @@ begin
     ---------------------------------------------------------------------
 
     declare @IdUsuarioOF3 int = (
-        select top 1 IdUsuario from #SupervisorRecibo order by newid()
+        select top 1 IdUsuario from (
+            select IdUsuario from #JefePolvos
+            union all
+            select IdUsuario from #SupervisorPolvos
+        ) as Polvos order by newid()
     );
 
     insert into OrdenFabricacion (IdFormula, IdLinea, IdEstadoOF, IdUsuario)
@@ -155,3 +198,9 @@ begin
     values (@IdMovPolvoDesc, @NroFabricacion3, 'Venta', 'Transferencia Directa');
 end;
 go
+
+
+exec usp_simular_proceso_leche_completo @IdProveedor = 30, @CodProdLecheCruda = 94, @CodProdEntera = 35, @CodProdDescremada = 35, @CodProdCrema = 35, @CodProdPolvo = 10, @CodProdPolvoDescremada = 15, @IdDepositoRecibo = 1, @IdDepositoSecado = 8, @IdLinea1 = 1, @IdLinea2 = 2, @IdLinea3 = 3, @IdFormula1 = 35, @IdFormula2 = 14, @IdFormula3 = 15, @CantidadCruda = 22787.11, @CantidadEntera = 5253.8, @CantidadDescremada = 7711.44, @CantidadCrema = 1430.71, @CantidadPolvo = 3227.47, @CantidadPolvoDescremada = 3648.09, @PrecioUnitario = 3220.48, @IdEstadoOC = 2, @IdEstadoOF1 = 3, @IdEstadoOF2 = 4, @IdEstadoOF3 = 1, @FechaMovimiento = '2021-02-22', @FechaVencimiento = '2021-05-04';
+exec usp_simular_proceso_leche_completo @IdProveedor = 35, @CodProdLecheCruda = 94, @CodProdEntera = 36, @CodProdDescremada = 36, @CodProdCrema = 35, @CodProdPolvo = 10, @CodProdPolvoDescremada = 11, @IdDepositoRecibo = 1, @IdDepositoSecado = 7, @IdLinea1 = 1, @IdLinea2 = 2, @IdLinea3 = 3, @IdFormula1 = 35, @IdFormula2 = 8, @IdFormula3 = 9, @CantidadCruda = 24815.47, @CantidadEntera = 6517.71, @CantidadDescremada = 8522.62, @CantidadCrema = 1368.51, @CantidadPolvo = 4424.27, @CantidadPolvoDescremada = 2517.55, @PrecioUnitario = 1612.55, @IdEstadoOC = 2, @IdEstadoOF1 = 4, @IdEstadoOF2 = 4, @IdEstadoOF3 = 2, @FechaMovimiento = '2020-01-25', @FechaVencimiento = '2020-04-05';
+exec usp_simular_proceso_leche_completo @IdProveedor = 30, @CodProdLecheCruda = 94, @CodProdEntera = 36, @CodProdDescremada = 35, @CodProdCrema = 36, @CodProdPolvo = 16, @CodProdPolvoDescremada = 9, @IdDepositoRecibo = 3, @IdDepositoSecado = 8, @IdLinea1 = 1, @IdLinea2 = 2, @IdLinea3 = 3, @IdFormula1 = 36, @IdFormula2 = 12, @IdFormula3 = 9, @CantidadCruda = 19419.39, @CantidadEntera = 5342.67, @CantidadDescremada = 8415.16, @CantidadCrema = 1530.38, @CantidadPolvo = 1407.57, @CantidadPolvoDescremada = 1655.96, @PrecioUnitario = 4318.54, @IdEstadoOC = 1, @IdEstadoOF1 = 2, @IdEstadoOF2 = 3, @IdEstadoOF3 = 3, @FechaMovimiento = '2020-09-28', @FechaVencimiento = '2020-12-10';
+--- .... usar script python
