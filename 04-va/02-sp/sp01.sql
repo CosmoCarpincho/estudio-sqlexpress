@@ -79,7 +79,7 @@ end;
 
 go
 
-exec usp_cantidad_de_usuarios_por_permiso
+exec usp_cantidad_de_usuarios_por_rol
 go
 
 
