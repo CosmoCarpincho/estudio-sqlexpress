@@ -98,3 +98,117 @@ create table Formula (
     constraint UQ_Formula_Nombre unique (Nombre),
     constraint FK_Formula_CodProducto foreign key (CodProducto) references Producto(CodProducto)
 );
+
+create table UsuarioFormula (
+    IdUsuario int,
+    IdFormula int,
+
+    constraint PK_UsuarioFormula primary key (IdUsuario, IdFormula),
+    constraint FK_UsuarioFormula_Usuario foreign key (IdUsuario) references Usuario(IdUsuario) on delete cascade,
+    constraint FK_UsuarioFormula_Formula foreign key (IdFormula) references Formula(IdFormula) on delete cascade
+);
+
+create table Linea (
+    IdLinea int identity(1,1),
+    IdSector int not null,
+    Nombre nvarchar(100) not null,
+    Descripcion nvarchar(255),
+
+    constraint PK_Linea primary key (IdLinea),
+    constraint FK_Linea_Sector foreign key (IdSector) references Sector(IdSector),
+    constraint UQ_Linea_Nombre unique (Nombre)
+);
+
+create table EstadoOF (
+    IdEstadoOF int identity(1,1),
+    Nombre varchar(11) not null,
+
+    constraint PK_EstadoOF primary key (IdEstadoOF),
+    constraint UQ_EstadoOF_Nombre unique (Nombre),
+    constraint CK_EstadoOF_Nombre check (
+        Nombre in ('Planificado', 'En Proceso', 'Cerrado', 'Calidad')
+    )
+);
+
+create table OrdenFabricacion (
+    NroFabricacion int identity(1,1),
+    IdFormula int not null,
+    IdLinea int not null,
+    IdEstadoOF int not null,
+    IdUsuario int not null,
+    FechaPlanificacion datetime not null default getdate(),
+    FechaInicio datetime,
+    FechaFin datetime,
+    EsAnulado bit not null default 0,
+
+    constraint PK_OrdenFabricacion primary key (NroFabricacion),
+    constraint FK_OrdenFabricacion_Formula foreign key (IdFormula) references Formula(IdFormula),
+    constraint FK_OrdenFabricacion_Linea foreign key (IdLinea) references Linea(IdLinea),
+    constraint FK_OrdenFabricacion_EstadoOF foreign key (IdEstadoOF) references EstadoOF(IdEstadoOF),
+    constraint FK_OrdenFacbricacion_Usuario foreign key (IdUsuario) references Usuario(IdUsuairo),
+
+    constraint CK_OrdenFabricacion_FechaInicio check (
+        FechaInicio is null or FechaInicio >= FechaPlanificiacion
+    ),
+    constraint CK_OrdenFabricacion_FechaFin check (
+        FechaFin is null or FechaFin >= FechaInicio
+    )
+);
+go
+
+create procedure usp_insertar_permiso_orden_sector
+    @Nombre nvarchar(100),
+    @Descripcion nvarchar(255),
+    @Accion varchar(10),
+    @TipoOrden varchar(30),
+    @IdSector int
+as
+begin
+    set nocount on;
+    begin transaction;
+
+    begin try
+        insert into Permiso (Nombre, Descripcion)
+        values (@Nombre, @Descripcion);
+
+        declare @NuevoId int = SCOPE_IDENTITY()
+
+        insert into PermisoOrdenSector (IdPermiso, TipoOrden, IdSector, Accion)
+        values (@NuevoId, @TipoOrden, @IdSector, @Accion);
+
+        commit transaction;
+    end try
+    begin catch
+        rollback transaction;
+        throw;
+    end catch
+end
+go
+
+create procedure nombre
+    @variable int
+as
+begin
+    set nocount on;
+    -- transacciones
+
+    begin transaction;
+
+    begin try
+        -- operaciones
+        commit transaction;
+    end try
+    begin catch
+        rollback transaction;
+        throw;
+    end catch
+end 
+
+-- insert into Permiso (Nombre, Decripcion)
+-- values
+-- (''),
+
+-- declare @IdRecibo int;
+
+-- select @IdRecibo = IdSector from ....
+go
