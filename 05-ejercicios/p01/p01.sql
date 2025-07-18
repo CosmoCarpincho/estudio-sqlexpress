@@ -151,3 +151,44 @@ where not exists (
 	where r.Descripcion = 'Hereford'
 		and ud2.Corral = ud.Corral
 );
+
+
+
+-- Animales que estuvieron en todos los corrales
+with CorralesTotales as (
+    select distinct Corral
+    from UbicacionDiaria
+),
+AnimalesQueEstuvieronEnTodosLosCorrales as (
+    select u.IdAnimal
+    from UbicacionDiaria u
+    group by u.IdAnimal
+    having count(distinct u.Corral) = (select count(*) from CorralesTotales)
+)
+
+-- Cálculo del consumo total de esos animales
+select a.IdAnimal, a.Nombre, sum(c.Cantidad) as TotalConsumo
+from Animales a
+join AnimalesQueEstuvieronEnTodosLosCorrales t on a.IdAnimal = t.IdAnimal
+join ConsumoDiario c on a.IdAnimal = c.IdAnimal
+group by a.IdAnimal, a.Nombre
+
+
+insert into UbicacionDiaria(IdAnimal, Fecha, Corral)
+values
+(1, '2025-07-03', 201),
+(1, '2025-07-04', 301);
+
+
+select a.IdAnimal, a.Nombre, sum(c.Cantidad) as TotalConsumo
+from Animales a
+join ConsumoDiario c on a.IdAnimal = c.IdAnimal
+where a.IdAnimal in (
+    select u.IdAnimal
+    from UbicacionDiaria u
+    group by u.IdAnimal
+    having count(distinct u.Corral) = (
+        select count(distinct Corral) from UbicacionDiaria
+    )
+)
+group by a.IdAnimal, a.Nombre
